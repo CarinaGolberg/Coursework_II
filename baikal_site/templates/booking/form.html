@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Бронирование тура</title>
+</head>
+<body>
+
+<h1>Форма бронирования тура на Байкал</h1>
+
+<form method="POST" id="booking-form">
+
+    {% csrf_token %}
+
+    <table>
+        {{ form.as_table }}
+    </table>
+
+    <button type="submit">Отправить данные</button>
+
+</form>
+
+{% if data %}
+
+<h2>Получены данные</h2>
+
+<table border="1">
+
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+
+<tr>
+<th>Имя</th>
+<td>{{ data.name }}</td>
+</tr>
+
+<tr>
+<th>Email</th>
+<td>{{ data.email }}</td>
+</tr>
+
+<tr>
+<th>Тур</th>
+<td>{{ data.tour }}</td>
+</tr>
+
+<tr>
+<th>Количество людей</th>
+<td>{{ data.people }}</td>
+</tr>
+
+<tr>
+<th>Дата тура</th>
+<td>{{ data.tour_date }}</td>
+</tr>
+
+</table>
+
+{% endif %}
+
+</body>
+</html>
