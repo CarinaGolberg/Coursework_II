@@ -1,48 +1,50 @@
 """
-Форма для бронирования тура на озере Байкал.
+Формы для бронирования тура.
 """
+
 from django import forms
+from .models import Booking, ConsentDocument
 
-class TourBookingForm(forms.Form):
-    """
-    Класс для бронирования тура на озеро Байкал.
-    
-    Содержит поля:
-    - name: имя клиента (обязательное)
-    - email: email (обязательное)
-    - tour: выбор тура
-    - people: количество человек
-    - tour_date: дата тура
-    """
 
-    name = forms.CharField(
-        label="Ваше имя",
-        max_length=100,
-        required=True
-    )
+class BookingForm(forms.ModelForm):
+    """Форма для бронирования тура"""
 
-    email = forms.EmailField(
-        label="Email",
-        required=True
-    )
-
-    tour = forms.ChoiceField(
-        label="Выберите тур",
-        choices = [
-            ('north', 'Север Байкала'),
-            ('olkhon', 'Остров Ольхон'),
-            ('winter', 'Зимний тур'),
-            ('summer', 'Летний тур')
+    class Meta:
+        """Класс для бронирования тура"""
+        model = Booking
+        fields = [
+            "tour",
+            "name",
+            "email",
+            "tour_date",
+            "people"
         ]
-    )
 
-    people = forms.IntegerField(
-        label="Количество человек",
-        min_value=1,
-        max_value=20
-    )
+        widgets = {
+            "tour_date": forms.DateInput(attrs={"type": "date"})
+        }
 
-    tour_date = forms.DateField(
-        label="Дата тура",
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
+    def clean(self):
+        """Проверка на максимальное количество участников тура"""
+
+        cleaned_data = super().clean()
+
+        tour = cleaned_data.get("tour")
+        people = cleaned_data.get("people")
+
+        if tour and people:
+            if people > tour.max_people:
+                raise forms.ValidationError(
+                    f"Максимум для этого тура: {tour.max_people}"
+                )
+
+        return cleaned_data
+
+
+class ConsentForm(forms.ModelForm):
+    """Форма для загрузки .pdf файла"""
+
+    class Meta:
+        """Класс для загрузки .pdf файла"""
+        model = ConsentDocument
+        fields = ["document"]

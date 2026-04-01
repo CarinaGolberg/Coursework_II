@@ -1,34 +1,56 @@
 """
-Представления (views) для приложения бронирования туров.
+Отображение форм
 """
-from django.shortcuts import render
-from .forms import TourBookingForm
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .forms import BookingForm, ConsentForm
+from .models import Tour
 
 
 def booking_view(request):
-    """
-    Функция обрабатывает отправку формы бронирования тура.
-    
-    При POST-запросе проверяет данные формы и сохраняет их.
-    При GET-запросе просто отображает пустую форму.
-    
-    Args:
-        request: HTTP объект запроса
-        
-    Returns:
-        Отрисованный HTML ответ с формой и отправленными данными
-    """
-
-    data = None
+    """Метод для отображения форм"""
 
     if request.method == "POST":
-        form = TourBookingForm(request.POST)
 
-        if form.is_valid():
-            data = form.cleaned_data
+        booking_form = BookingForm(request.POST)
+        consent_form = ConsentForm(request.POST, request.FILES)
+
+        if booking_form.is_valid() and consent_form.is_valid():
+
+            booking = booking_form.save()
+
+            consent = consent_form.save(commit=False)
+            consent.booking = booking
+            consent.save()
+
+            return redirect("booking")
+
     else:
-        form = TourBookingForm()
-    return render(request, "booking/form.html", {
-        "form": form,
-        "data": data
-    })
+
+        booking_form = BookingForm()
+        consent_form = ConsentForm()
+
+    return render(
+        request,
+        "booking/booking_form.html",
+        {
+            "booking_form": booking_form,
+            "consent_form": consent_form
+        }
+    )
+
+def tour_info(_request, tour_id):
+    """Возвращает информацию о туре"""
+
+    tour = Tour.objects.get(id=tour_id)
+
+    data = {
+        "title": tour.title,
+        "description": tour.description,
+        "duration": tour.duration,
+        "price": tour.price,
+        "max_people": tour.max_people,
+        "image": tour.image.url
+    }
+
+    return JsonResponse(data)

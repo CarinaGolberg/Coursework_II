@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Бронирование тура</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f2f5f7;
+}
+
+.container{
+width:600px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{
+text-align:center;
+}
+
+.form-group{
+margin-bottom:15px;
+}
+
+input,select{
+width:100%;
+padding:8px;
+}
+
+button{
+padding:10px;
+background:#007BFF;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#0056b3;
+}
+
+.tour-card{
+margin-top:20px;
+padding:15px;
+border:1px solid #ddd;
+border-radius:10px;
+background:#fafafa;
+}
+
+.tour-card img{
+width:100%;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Бронирование тура</h1>
+
+<form method="post" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="form-group">
+<label>Выберите тур</label>
+{{ booking_form.tour }}
+</div>
+
+<div id="tour-info" class="tour-card" style="display:none;">
+
+<h3 id="tour-title"></h3>
+
+<img id="tour-image">
+
+<p id="tour-description"></p>
+
+<p><b>Длительность:</b> <span id="tour-duration"></span> дней</p>
+
+<p><b>Цена:</b> <span id="tour-price"></span> руб.</p>
+
+<p><b>Максимум участников:</b> <span id="tour-max"></span></p>
+
+</div>
+
+<div class="form-group">
+<label>Ваше имя</label>
+{{ booking_form.name }}
+</div>
+
+<div class="form-group">
+<label>Email</label>
+{{ booking_form.email }}
+</div>
+
+<div class="form-group">
+<label>Дата тура</label>
+{{ booking_form.tour_date }}
+</div>
+
+<div class="form-group">
+<label>Количество человек</label>
+{{ booking_form.people }}
+</div>
+
+<div class="form-group">
+<label>Загрузите согласие (PDF)</label>
+{{ consent_form.document }}
+</div>
+
+<button type="submit">Забронировать</button>
+
+</form>
+
+</div>
+
+<script>
+
+const tourSelect = document.getElementById("id_tour")
+
+tourSelect.addEventListener("change", function(){
+
+const tourId = this.value
+
+fetch("/tour/" + tourId + "/")
+
+.then(response => response.json())
+
+.then(data => {
+
+document.getElementById("tour-info").style.display = "block"
+
+document.getElementById("tour-title").textContent = data.title
+document.getElementById("tour-description").textContent = data.description
+document.getElementById("tour-duration").textContent = data.duration
+document.getElementById("tour-price").textContent = data.price
+document.getElementById("tour-max").textContent = data.max_people
+
+document.getElementById("tour-image").src = data.image
+
+document.getElementById("id_people").max = data.max_people
+
+})
+
+})
+
+</script>
+
+</body>
+</html>

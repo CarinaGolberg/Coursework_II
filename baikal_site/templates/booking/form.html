@@ -1,63 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Бронирование тура</title>
+    <title>Добавление тура</title>
 </head>
+
 <body>
 
-<h1>Форма бронирования тура на Байкал</h1>
+<h1>Добавить тур на Байкал</h1>
 
-<form method="POST" id="booking-form">
+<form method="POST" enctype="multipart/form-data" id="tour-form">
 
-    {% csrf_token %}
+{% csrf_token %}
 
-    <table>
-        {{ form.as_table }}
-    </table>
+<h2>Информация о туре</h2>
+{{ tour_form.as_p }}
 
-    <button type="submit">Отправить данные</button>
+<h2>Бронирование</h2>
+{{ booking_form.as_p }}
+
+<h2>Фотография тура</h2>
+{{ image_form.as_p }}
+
+<button type="submit" form="tour-form">
+Отправить данные
+</button>
 
 </form>
-
-{% if data %}
-
-<h2>Получены данные</h2>
-
-<table border="1">
-
-<tr>
-<th>Поле</th>
-<th>Значение</th>
-</tr>
-
-<tr>
-<th>Имя</th>
-<td>{{ data.name }}</td>
-</tr>
-
-<tr>
-<th>Email</th>
-<td>{{ data.email }}</td>
-</tr>
-
-<tr>
-<th>Тур</th>
-<td>{{ data.tour }}</td>
-</tr>
-
-<tr>
-<th>Количество людей</th>
-<td>{{ data.people }}</td>
-</tr>
-
-<tr>
-<th>Дата тура</th>
-<td>{{ data.tour_date }}</td>
-</tr>
-
-</table>
-
-{% endif %}
 
 </body>
 </html>
