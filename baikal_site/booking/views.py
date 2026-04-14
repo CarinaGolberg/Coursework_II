@@ -2,9 +2,7 @@
 Отображение форм
 """
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
 from .forms import BookingForm, ConsentForm
-from .models import Tour
 
 
 def booking_view(request):
@@ -38,19 +36,3 @@ def booking_view(request):
             "consent_form": consent_form
         }
     )
-
-def tour_info(_request, tour_id):
-    """Возвращает информацию о туре"""
-
-    tour = Tour.objects.get(id=tour_id)
-
-    data = {
-        "title": tour.title,
-        "description": tour.description,
-        "duration": tour.duration,
-        "price": tour.price,
-        "max_people": tour.max_people,
-        "image": tour.image.url
-    }
-
-    return JsonResponse(data)

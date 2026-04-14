@@ -34,12 +34,20 @@ padding:8px;
 }
 
 button{
-padding:10px;
-background:#007BFF;
+padding:12px 25px;
+background:#71b378;
 color:white;
 border:none;
-border-radius:5px;
+border-radius:6px;
 cursor:pointer;
+font-size:16px;
+
+display:block;
+margin:20px auto;
+}
+
+button:hover{
+background:#a9d0f8;
 }
 
 button:hover{
@@ -78,22 +86,6 @@ border-radius:10px;
 {{ booking_form.tour }}
 </div>
 
-<div id="tour-info" class="tour-card" style="display:none;">
-
-<h3 id="tour-title"></h3>
-
-<img id="tour-image">
-
-<p id="tour-description"></p>
-
-<p><b>Длительность:</b> <span id="tour-duration"></span> дней</p>
-
-<p><b>Цена:</b> <span id="tour-price"></span> руб.</p>
-
-<p><b>Максимум участников:</b> <span id="tour-max"></span></p>
-
-</div>
-
 <div class="form-group">
 <label>Ваше имя</label>
 {{ booking_form.name }}
@@ -115,7 +107,7 @@ border-radius:10px;
 </div>
 
 <div class="form-group">
-<label>Загрузите согласие (PDF)</label>
+<label>Загрузите согласие (PDF, PNG, JPG)</label>
 {{ consent_form.document }}
 </div>
 
@@ -124,38 +116,6 @@ border-radius:10px;
 </form>
 
 </div>
-
-<script>
-
-const tourSelect = document.getElementById("id_tour")
-
-tourSelect.addEventListener("change", function(){
-
-const tourId = this.value
-
-fetch("/tour/" + tourId + "/")
-
-.then(response => response.json())
-
-.then(data => {
-
-document.getElementById("tour-info").style.display = "block"
-
-document.getElementById("tour-title").textContent = data.title
-document.getElementById("tour-description").textContent = data.description
-document.getElementById("tour-duration").textContent = data.duration
-document.getElementById("tour-price").textContent = data.price
-document.getElementById("tour-max").textContent = data.max_people
-
-document.getElementById("tour-image").src = data.image
-
-document.getElementById("id_people").max = data.max_people
-
-})
-
-})
-
-</script>
 
 </body>
 </html>
