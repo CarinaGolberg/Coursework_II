@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{{ tour.title }} - детали тура</title>
+
+<style>
+
+body {
+    font-family: Arial;
+    background: #f2f5f7;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #71b378;
+}
+
+h2 {
+    color: #555;
+    border-bottom: 2px solid #71b378;
+    padding-bottom: 10px;
+}
+
+.nav {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.tour-info {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    margin-bottom: 15px;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.info-label {
+    font-weight: bold;
+    display: inline-block;
+    width: 200px;
+    color: #555;
+}
+
+.info-value {
+    display: inline-block;
+    color: #333;
+}
+
+.tour-image {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.tour-image img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.booking-info {
+    background-color: #e8f4e8;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #71b378;
+    color: white;
+}
+
+.actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.btn-back {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: black;
+}
+
+.btn-back:hover {
+    background-color: #5a6268;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
+.docs-list {
+    margin-top: 15px;
+}
+
+.docs-list li {
+    margin: 10px 0;
+}
+
+.docs-list a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.docs-list a:hover {
+    text-decoration: underline;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="nav">
+    <a href="{% url 'booking' %}">Бронирование тура</a>
+    <a href="{% url 'tour_list' %}">Список туров</a>
+</div>
+
+<div class="container">
+
+<h1>{{ tour.title }}</h1>
+
+<div class="tour-info">
+    <h2>Основная информация о туре</h2>
+    
+    <div class="info-row">
+        <span class="info-label">Название:</span>
+        <span class="info-value">{{ tour.title }}</span>
+    </div>
+    
+    <div class="info-row">
+        <span class="info-label">Описание:</span>
+        <div class="info-value" style="margin-top: 10px;">{{ tour.description }}</div>
+    </div>
+    
+    <div class="info-row">
+        <span class="info-label">Длительность:</span>
+        <span class="info-value">{{ tour.duration }} дней</span>
+    </div>
+    
+    <div class="info-row">
+        <span class="info-label">Цена:</span>
+        <span class="info-value">{{ tour.price }} рублей</span>
+    </div>
+    
+    <div class="info-row">
+        <span class="info-label">Максимальное количество участников:</span>
+        <span class="info-value">{{ tour.max_people }} человек</span>
+    </div>
+    
+    {% if tour.image %}
+    <div class="tour-image">
+        <img src="{{ tour.image.url }}" alt="{{ tour.title }}">
+    </div>
+    {% endif %}
+</div>
+
+<div class="booking-info">
+    <h2>Информация о бронированиях</h2>
+    
+    <div class="info-row">
+        <span class="info-label">Всего забронировано мест:</span>
+        <span class="info-value"><strong>{{ total_booked }}</strong> из {{ tour.max_people }}</span>
+    </div>
+    
+    <div class="info-row">
+        <span class="info-label">Свободных мест:</span>
+        <span class="info-value"><strong>{{ tour.max_people|add:"-5"|add:total_booked }}</strong></span>
+    </div>
+    
+    {% if bookings %}
+    <h3>Список бронирований:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Дата тура</th>
+                <th>Количество человек</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.name }}</td>
+                <td>{{ booking.email }}</td>
+                <td>{{ booking.tour_date }}</td>
+                <td>{{ booking.people }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>На этот тур пока нет бронирований. Будьте первым!</p>
+    {% endif %}
+    
+    {% if consent_docs %}
+    <h3>Документы согласия:</h3>
+    <ul class="docs-list">
+        {% for doc in consent_docs %}
+        <li>
+            <a href="{{ doc.document.url }}" target="_blank">
+                Согласие на обработку данных - {{ doc.booking.name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<div class="actions">
+    <a href="{% url 'tour_list' %}" class="btn btn-back">Назад к списку туров</a>
+    <a href="{% url 'tour_edit' tour.id %}" class="btn btn-edit">Редактировать тур</a>
+</div>
+
+</div>
+
+</body>
+</html>

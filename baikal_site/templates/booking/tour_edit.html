@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Редактирование тура - {{ tour.title }}</title>
+
+<style>
+
+body {
+    font-family: Arial;
+    background: #f2f5f7;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #71b378;
+}
+
+.nav {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.current-image {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.current-image img {
+    max-width: 200px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.buttons {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.errorlist {
+    color: red;
+    list-style: none;
+    padding: 0;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="nav">
+    <a href="{% url 'booking' %}">Бронирование тура</a>
+    <a href="{% url 'tour_list' %}">Список туров</a>
+    <a href="{% url 'tour_detail' tour.id %}">Детали тура</a>
+</div>
+
+<div class="container">
+
+<h1>Редактирование тура</h1>
+<h2 style="text-align: center; color: #666;">{{ tour.title }}</h2>
+
+{% if tour.image %}
+<div class="current-image">
+    <strong>Текущее изображение:</strong><br>
+    <img src="{{ tour.image.url }}" alt="{{ tour.title }}">
+    <p class="help-text">Загрузите новое изображение, чтобы заменить текущее</p>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+            <div class="help-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+            <ul class="errorlist">{{ field.errors }}</ul>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <div class="buttons">
+        <button type="submit" class="btn-save">Сохранить изменения</button>
+        <a href="{% url 'tour_detail' tour.id %}" class="btn-cancel">Отмена</a>
+    </div>
+</form>
+
+</div>
+
+</body>
+</html>

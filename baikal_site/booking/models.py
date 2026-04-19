@@ -15,6 +15,7 @@ class Tour(models.Model):
     duration = models.IntegerField()
     price = models.DecimalField(max_digits=10,decimal_places=2)
     max_people = models.IntegerField()
+    removed = models.BooleanField(default=False)
 
     image = models.ImageField(
         upload_to="tours/",

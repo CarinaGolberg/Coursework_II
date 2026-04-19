@@ -3,7 +3,7 @@
 """
 
 from django import forms
-from .models import Booking, ConsentDocument
+from .models import Booking, ConsentDocument, Tour
 
 
 class BookingForm(forms.ModelForm):
@@ -24,9 +24,24 @@ class BookingForm(forms.ModelForm):
             "tour_date": forms.DateInput(attrs={"type": "date"})
         }
 
+    def __init__(self, *args, **kwargs):
+        """Инициализация формы - показываем только не удаленные туры"""
+        super().__init__(*args, **kwargs)
+        # Показываем только туры, которые не удалены
+        self.fields['tour'].queryset = Tour.objects.filter(removed=False)
+
+    def clean_people(self):
+        """Проверка количества человек"""
+        people = self.cleaned_data.get('people')
+        
+        if people is not None:
+            if people <= 0:
+                raise forms.ValidationError("Количество человек должно быть больше нуля")
+        
+        return people
+
     def clean(self):
         """Проверка на максимальное количество участников тура"""
-
         cleaned_data = super().clean()
 
         tour = cleaned_data.get("tour")
@@ -35,7 +50,7 @@ class BookingForm(forms.ModelForm):
         if tour and people:
             if people > tour.max_people:
                 raise forms.ValidationError(
-                    f"Максимум для этого тура: {tour.max_people}"
+                    f"Количество человек не может превышать {tour.max_people} для этого тура"
                 )
 
         return cleaned_data
@@ -48,3 +63,25 @@ class ConsentForm(forms.ModelForm):
         """Класс для загрузки .pdf файла"""
         model = ConsentDocument
         fields = ["document"]
+
+
+class TourForm(forms.ModelForm):
+    """Форма для создания и редактирования тура"""
+    
+    class Meta:
+        model = Tour
+        fields = ['title', 'description', 'duration', 'price', 'max_people', 'image']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5, 'cols': 40}),
+            'duration': forms.NumberInput(attrs={'min': 1}),
+            'price': forms.NumberInput(attrs={'step': 0.01, 'min': 0}),
+            'max_people': forms.NumberInput(attrs={'min': 1}),
+        }
+        labels = {
+            'title': 'Название тура',
+            'description': 'Описание',
+            'duration': 'Длительность (дней)',
+            'price': 'Цена (руб.)',
+            'max_people': 'Максимальное количество участников',
+            'image': 'Изображение тура',
+        }
