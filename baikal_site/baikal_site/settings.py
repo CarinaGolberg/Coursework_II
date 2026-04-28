@@ -51,6 +51,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Убедитесь, что CSRF cookie установлен
+CSRF_COOKIE_SECURE = False  # Для разработки (True для HTTPS)
+CSRF_COOKIE_HTTPONLY = False  # Должен быть False, чтобы JS мог прочитать cookie
+CSRF_USE_SESSIONS = False  # Используем cookie, а не сессии
+
 ROOT_URLCONF = 'baikal_site.urls'
 
 TEMPLATES = [
@@ -116,7 +121,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = "media"

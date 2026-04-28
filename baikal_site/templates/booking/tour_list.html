@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Список туров на Байкал</title>
-
+{% load static %}
 <style>
 
 body {
-    font-family: Arial;
-    background: #f2f5f7;
+    font-family: Arial, sans-serif;
+    background: #e8f5e9;
     margin: 0;
     padding: 20px;
 }
@@ -19,18 +19,19 @@ body {
     background: white;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.08);
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    color: #2d5a2e;
+    margin-bottom: 30px;
 }
 
 .nav {
     margin-bottom: 20px;
     padding: 10px;
-    background-color: #f0f0f0;
+    background-color: #f1f8e9;
     border-radius: 5px;
     text-align: center;
 }
@@ -38,11 +39,13 @@ h1 {
 .nav a {
     margin: 0 15px;
     text-decoration: none;
-    color: #007bff;
+    color: #71b378;
     font-weight: bold;
+    transition: color 0.3s ease;
 }
 
 .nav a:hover {
+    color: #5a9e60;
     text-decoration: underline;
 }
 
@@ -53,7 +56,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #ddd;
+    border: 1px solid #c8e6c9;
     padding: 12px;
     text-align: left;
 }
@@ -61,23 +64,36 @@ th, td {
 th {
     background-color: #71b378;
     color: white;
+    font-weight: bold;
+    font-size: 15px;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #f1f8e9;
+}
+
+tr:nth-child(odd) {
+    background-color: #ffffff;
 }
 
 tr:hover {
-    background-color: #e9e9e9;
+    background-color: #e8f5e9;
+    transition: background-color 0.3s ease;
 }
 
 .actions a {
-    margin-right: 10px;
+    margin-right: 8px;
     text-decoration: none;
     padding: 5px 10px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.actions a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .btn-detail {
@@ -85,22 +101,22 @@ tr:hover {
     color: white;
 }
 
+.btn-detail:hover {
+    background-color: #138496;
+}
+
 .btn-edit {
     background-color: #ffc107;
     color: black;
 }
 
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
 .btn-delete {
     background-color: #dc3545;
     color: white;
-}
-
-.btn-detail:hover {
-    background-color: #138496;
-}
-
-.btn-edit:hover {
-    background-color: #e0a800;
 }
 
 .btn-delete:hover {
@@ -110,24 +126,138 @@ tr:hover {
 .no-tours {
     text-align: center;
     padding: 50px;
+    background: #f1f8e9;
+    border-radius: 8px;
+    margin-top: 20px;
+    border-left: 4px solid #dc3545;
+}
+
+.no-tours p {
     color: #666;
     font-size: 18px;
+    margin: 10px 0;
+}
+
+.no-tours p:first-child {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Статус доступности мест */
+.seats-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.seats-available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.seats-limited {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.seats-full {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Анимация для таблицы */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Счетчик туров */
+.tour-count {
+    text-align: right;
+    color: #71b378;
+    font-size: 14px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Иконки в заголовках таблицы */
+th:first-child::before {
+    content: "🔢 ";
+}
+
+th:nth-child(2)::before {
+    content: "📋 ";
+}
+
+th:nth-child(3)::before {
+    content: "⏱️ ";
+}
+
+th:nth-child(4)::before {
+    content: "💰 ";
+}
+
+th:nth-child(5)::before {
+    content: "👥 ";
+}
+
+th:last-child::before {
+    content: "⚙️ ";
+}
+
+/* Стили для цены */
+.price {
+    font-weight: bold;
+    color: #71b378;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    th, td {
+        padding: 8px;
+        font-size: 12px;
+    }
+    
+    .actions a {
+        margin-right: 4px;
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    
+    h1 {
+        font-size: 20px;
+    }
 }
 
 </style>
-
 </head>
 
 <body>
 
 <div class="nav">
-    <a href="{% url 'booking' %}">Бронирование тура</a>
-    <a href="{% url 'tour_list' %}">Список туров</a>
+    <a href="{% url 'booking' %}">📅 Бронирование тура</a>
+    <a href="{% url 'tour_list' %}">📋 Список туров</a>
 </div>
 
 <div class="container">
 
-<h1>Список доступных туров на Байкал</h1>
+<h1>🏔️ Список доступных туров на Байкал</h1>
 
 {% if tours %}
 <table>
@@ -144,25 +274,37 @@ tr:hover {
     <tbody>
         {% for tour in tours %}
         <tr>
-            <td>{{ tour.id }}</td>
-            <td><strong>{{ tour.title }}</strong></td>
+            <td>#{{ tour.id }}</td>
+            <td>
+                <strong>{{ tour.title }}</strong>
+                {% if tour.removed %}
+                    <span style="color: red; font-size: 12px;">(удален)</span>
+                {% endif %}
+            </td>
             <td>{{ tour.duration }} дней</td>
-            <td>{{ tour.price }} руб.</td>
+            <td class="price">{{ tour.price }} руб.</td>
             <td>{{ tour.max_people }} чел.</td>
             <td class="actions">
-                <a href="{% url 'tour_detail' tour.id %}" class="btn-detail">Подробнее</a>
-                <a href="{% url 'tour_edit' tour.id %}" class="btn-edit">Изменить</a>
+                <a href="{% url 'tour_detail' tour.id %}" class="btn-detail" title="Подробнее о туре">🔍 Подробнее</a>
+                <a href="{% url 'tour_edit' tour.id %}" class="btn-edit" title="Редактировать тур">✏️ Изменить</a>
                 <a href="{% url 'tour_delete' tour.id %}" class="btn-delete" 
-                   onclick="return confirm('Вы уверены, что хотите удалить тур {{ tour.title }}?');">Удалить</a>
+                   onclick="return confirm('Вы уверены, что хотите удалить тур "{{ tour.title }}"?');"
+                   title="Удалить тур">🗑️ Удалить</a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<div class="tour-count">
+    📊 Всего туров: {{ tours|length }}
+</div>
 {% else %}
 <div class="no-tours">
-    <p>В данный момент нет доступных туров.</p>
-    <p>Добавьте туры через административную панель.</p>
+    <p>😕 В данный момент нет доступных туров</p>
+    <p>Добавьте туры через административную панель</p>
+    <p style="font-size: 14px; margin-top: 20px;">
+        📌 Админ-панель: <a href="/admin/" style="color: #71b378;">/admin/</a>
+    </p>
 </div>
 {% endif %}
 

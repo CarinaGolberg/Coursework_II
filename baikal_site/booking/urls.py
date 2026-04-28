@@ -2,6 +2,7 @@
 URL-patterns
 """
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 urlpatterns = [
@@ -22,4 +23,7 @@ urlpatterns = [
     
     # Восстановление тура
     path('tour/<int:pk>/restore/', views.tour_restore_view, name='tour_restore'),
+
+    path('ajax/tour-details/', views.get_tour_details_ajax, name='ajax_tour_details'),
+    path('ajax/calculate-price/', views.calculate_price_ajax, name='ajax_calculate_price'),
 ]

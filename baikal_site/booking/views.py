@@ -3,7 +3,11 @@
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from datetime import datetime
+
 from .forms import BookingForm, ConsentForm, TourForm
 from .models import Tour, Booking, ConsentDocument
 
@@ -32,12 +36,16 @@ def booking_view(request):
         booking_form = BookingForm()
         consent_form = ConsentForm()
 
+    # Передаем все туры для AJAX запросов
+    tours = Tour.objects.filter(removed=False)
+    
     return render(
         request,
         "booking/booking_form.html",
         {
             "booking_form": booking_form,
-            "consent_form": consent_form
+            "consent_form": consent_form,
+            "tours": tours
         }
     )
 
@@ -115,3 +123,96 @@ def tour_restore_view(request, pk):
     tour.save()
     
     return redirect('tour_list')
+
+
+# ============= AJAX VIEWS =============
+
+@require_http_methods(["GET"])
+def get_tour_details_ajax(request):
+    """
+    AJAX-запрос 1: Получение детальной информации о туре
+    """
+    tour_id = request.GET.get('tour_id')
+    
+    if not tour_id:
+        return JsonResponse({
+            'error': 'Не указан ID тура'
+        }, status=400)
+    
+    try:
+        tour = Tour.objects.get(id=tour_id, removed=False)
+        
+        # Получаем общее количество забронированных мест
+        bookings = Booking.objects.filter(tour=tour)
+        total_booked = sum(booking.people for booking in bookings)
+        
+        return JsonResponse({
+            'success': True,
+            'tour': {
+                'id': tour.id,
+                'title': tour.title,
+                'description': tour.description,
+                'duration': tour.duration,
+                'price': str(tour.price),
+                'max_people': tour.max_people,
+                'total_booked': total_booked,
+                'available_seats': tour.max_people - total_booked,
+                'image_url': tour.image.url if tour.image else None,
+            }
+        })
+        
+    except Tour.DoesNotExist:
+        return JsonResponse({
+            'error': 'Тур не найден'
+        }, status=404)
+
+
+@require_http_methods(["GET"])
+def calculate_price_ajax(request):
+    """
+    AJAX-запрос 2: Расчет общей стоимости тура (без скидки)
+    """
+    tour_id = request.GET.get('tour_id')
+    people_count = request.GET.get('people_count')
+    
+    if not tour_id:
+        return JsonResponse({
+            'error': 'Не указан ID тура'
+        }, status=400)
+    
+    if not people_count:
+        return JsonResponse({
+            'error': 'Не указано количество человек'
+        }, status=400)
+    
+    try:
+        tour = Tour.objects.get(id=tour_id, removed=False)
+        people = int(people_count)
+        
+        if people <= 0:
+            return JsonResponse({
+                'error': 'Количество человек должно быть больше 0'
+            }, status=400)
+        
+        # Простой расчет без скидки
+        total_price = tour.price * people
+        
+        return JsonResponse({
+            'success': True,
+            'calculation': {
+                'tour_id': tour.id,
+                'tour_title': tour.title,
+                'price_per_person': str(tour.price),
+                'people_count': people,
+                'currency': 'руб.'
+            }
+        })
+        
+    except Tour.DoesNotExist:
+        return JsonResponse({
+            'error': 'Тур не найден'
+        }, status=404)
+    except ValueError:
+        return JsonResponse({
+            'error': 'Неверное количество человек'
+        }, status=400)

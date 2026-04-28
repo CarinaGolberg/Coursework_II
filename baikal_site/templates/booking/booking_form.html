@@ -3,332 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Бронирование тура</title>
-
-<style>
-
-body{
-font-family: Arial;
-background:#f2f5f7;
-}
-
-.container{
-width:600px;
-margin:auto;
-background:white;
-padding:30px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-
-h1{
-text-align:center;
-}
-
-.form-group{
-margin-bottom:15px;
-}
-
-input,select{
-width:100%;
-padding:8px;
-}
-
-button{
-padding:12px 25px;
-background:#71b378;
-color:white;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-size:16px;
-
-display:block;
-margin:20px auto;
-}
-
-button:hover{
-background:#0056b3;
-}
-
-.tour-card{
-margin-top:20px;
-padding:15px;
-border:1px solid #ddd;
-border-radius:10px;
-background:#fafafa;
-}
-
-.tour-card img{
-width:100%;
-border-radius:10px;
-}
-
-.nav {
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.nav a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
-}
-
-.nav a:hover {
-    text-decoration: underline;
-}
-
-.errorlist {
-    color: red;
-    list-style: none;
-    padding: 0;
-}
-
-/* Стили для модального окна */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 0;
-    width: 500px;
-    max-width: 90%;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    padding: 15px 20px;
-    background-color: #71b378;
-    color: white;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-}
-
-.close {
-    color: white;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: #ddd;
-}
-
-.modal-body {
-    padding: 20px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.modal-body img {
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-.modal-body p {
-    line-height: 1.5;
-    color: #333;
-}
-
-.modal-footer {
-    padding: 15px 20px;
-    background-color: #f5f5f5;
-    border-radius: 0 0 10px 10px;
-    text-align: right;
-}
-
-.modal-footer button {
-    margin: 0;
-    padding: 8px 20px;
-    background-color: #71b378;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.modal-footer button:hover {
-    background-color: #5a9e60;
-}
-
-.error-modal .modal-header {
-    background-color: #dc3545;
-}
-
-.error-modal .modal-footer button {
-    background-color: #dc3545;
-}
-
-.error-modal .modal-footer button:hover {
-    background-color: #c82333;
-}
-
-.tour-info-btn {
-    background-color: #17a2b8;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 12px;
-    margin-left: 10px;
-}
-
-.tour-info-btn:hover {
-    background-color: #138496;
-}
-
-.select-with-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.select-with-info select {
-    flex: 1;
-}
-
-/* Стили для стикеров (toast-уведомлений) */
-.toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-}
-
-.toast {
-    background-color: #28a745;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-width: 250px;
-    animation: slideInRight 0.3s ease;
-    position: relative;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.toast-success {
-    background-color: #28a745;
-    border-left: 5px solid #1e7e34;
-}
-
-.toast-error {
-    background-color: #dc3545;
-    border-left: 5px solid #bd2130;
-}
-
-.toast-info {
-    background-color: #17a2b8;
-    border-left: 5px solid #117a8b;
-}
-
-.toast-warning {
-    background-color: #ffc107;
-    color: #333;
-    border-left: 5px solid #d39e00;
-}
-
-.toast-icon {
-    margin-right: 12px;
-    font-size: 20px;
-}
-
-.toast-message {
-    flex: 1;
-    font-size: 14px;
-}
-
-.toast-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    margin-left: 10px;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.toast-close:hover {
-    opacity: 0.8;
-}
-
-.progress-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background-color: rgba(255,255,255,0.7);
-    border-radius: 0 0 8px 8px;
-    animation: progress 3s linear forwards;
-}
-
-@keyframes progress {
-    from {
-        width: 100%;
-    }
-    to {
-        width: 0%;
-    }
-}
-
-</style>
-
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/booking_form.css' %}">
 </head>
-
 <body>
 
 <!-- Контейнер для стикеров -->
@@ -356,55 +33,61 @@ border-radius:10px;
 {% csrf_token %}
 
 <div class="form-group">
-<label>Выберите тур</label>
-<div class="select-with-info">
-    {{ booking_form.tour }}
-    <button type="button" class="tour-info-btn" id="showTourInfoBtn">Информация о туре</button>
-</div>
-{% if booking_form.tour.errors %}
-    <ul class="errorlist">{{ booking_form.tour.errors }}</ul>
-{% endif %}
-</div>
-
-<div class="form-group">
-<label>Ваше имя</label>
-{{ booking_form.name }}
-{% if booking_form.name.errors %}
-    <ul class="errorlist">{{ booking_form.name.errors }}</ul>
-{% endif %}
+    <label>Выберите тур</label>
+    <div class="select-with-info">
+        {{ booking_form.tour }}
+        <button type="button" class="tour-info-btn" id="showTourInfoBtn">Информация о туре</button>
+    </div>
+    <!-- Блок для отображения дополнительной информации о туре (AJAX) -->
+    <div id="tourInfoBlock" style="margin-top: 10px; padding: 15px; background: #f0f9f0; border-radius: 8px; display: none; border-left: 4px solid #71b378;">
+        <div id="tourInfoText"></div>
+    </div>
+    {% if booking_form.tour.errors %}
+        <ul class="errorlist">{{ booking_form.tour.errors }}</ul>
+    {% endif %}
 </div>
 
 <div class="form-group">
-<label>Email</label>
-{{ booking_form.email }}
-{% if booking_form.email.errors %}
-    <ul class="errorlist">{{ booking_form.email.errors }}</ul>
-{% endif %}
+    <label>Ваше имя</label>
+    {{ booking_form.name }}
+    {% if booking_form.name.errors %}
+        <ul class="errorlist">{{ booking_form.name.errors }}</ul>
+    {% endif %}
 </div>
 
 <div class="form-group">
-<label>Дата тура</label>
-{{ booking_form.tour_date }}
-{% if booking_form.tour_date.errors %}
-    <ul class="errorlist">{{ booking_form.tour_date.errors }}</ul>
-{% endif %}
+    <label>Email</label>
+    {{ booking_form.email }}
+    {% if booking_form.email.errors %}
+        <ul class="errorlist">{{ booking_form.email.errors }}</ul>
+    {% endif %}
 </div>
 
 <div class="form-group">
-<label>Количество человек</label>
-{{ booking_form.people }}
-<div id="peopleError" style="color: red; font-size: 14px; margin-top: 5px;"></div>
-{% if booking_form.people.errors %}
-    <ul class="errorlist">{{ booking_form.people.errors }}</ul>
-{% endif %}
+    <label>Дата тура</label>
+    {{ booking_form.tour_date }}
+    {% if booking_form.tour_date.errors %}
+        <ul class="errorlist">{{ booking_form.tour_date.errors }}</ul>
+    {% endif %}
 </div>
 
 <div class="form-group">
-<label>Загрузите согласие (PDF, PNG, JPG)</label>
-{{ consent_form.document }}
-{% if consent_form.document.errors %}
-    <ul class="errorlist">{{ consent_form.document.errors }}</ul>
-{% endif %}
+    <label>Количество человек</label>
+    {{ booking_form.people }}
+    <div id="peopleError" style="color: red; font-size: 14px; margin-top: 5px;"></div>
+    <!-- Блок для отображения рассчитанной цены (AJAX) -->
+    <div id="priceCalculation" style="display: none;"></div>
+    {% if booking_form.people.errors %}
+        <ul class="errorlist">{{ booking_form.people.errors }}</ul>
+    {% endif %}
+</div>
+
+<div class="form-group">
+    <label>Загрузите согласие (PDF, PNG, JPG)</label>
+    {{ consent_form.document }}
+    {% if consent_form.document.errors %}
+        <ul class="errorlist">{{ consent_form.document.errors }}</ul>
+    {% endif %}
 </div>
 
 <button type="submit">Забронировать</button>
@@ -445,263 +128,23 @@ border-radius:10px;
     </div>
 </div>
 
+<!-- Передаем данные из Django в JavaScript -->
 <script>
-// Данные о турах из Django
-const toursData = {
-    {% for tour in booking_form.fields.tour.queryset %}
-    {{ tour.id }}: {
-        id: {{ tour.id }},
-        title: "{{ tour.title|escapejs }}",
-        description: "{{ tour.description|escapejs|truncatechars:200 }}",
-        image: "{% if tour.image %}{{ tour.image.url }}{% else %}{% endif %}",
-        max_people: {{ tour.max_people }},
-        price: {{ tour.price }},
-        duration: {{ tour.duration }}
-    },
-    {% endfor %}
-};
-
-// Функция для отображения стикера (toast-уведомления)
-function showToast(message, type = 'success', duration = 3000) {
-    const container = document.getElementById('toastContainer');
-    
-    // Создаём элемент стикера
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    // Выбираем иконку в зависимости от типа
-    let icon = '✓';
-    if (type === 'error') icon = '✗';
-    if (type === 'info') icon = 'ℹ';
-    if (type === 'warning') icon = '⚠';
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-message">${message}</div>
-        <button class="toast-close">&times;</button>
-        <div class="progress-bar"></div>
-    `;
-    
-    container.appendChild(toast);
-    
-    // Анимация исчезновения
-    const progressBar = toast.querySelector('.progress-bar');
-    progressBar.style.animation = `progress ${duration/1000}s linear forwards`;
-    
-    // Закрытие по кнопке
-    const closeBtn = toast.querySelector('.toast-close');
-    closeBtn.addEventListener('click', () => {
-        toast.remove();
-    });
-    
-    // Автоматическое исчезновение через заданное время
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (toast.parentNode) toast.remove();
-            }, 300);
-        }
-    }, duration);
-}
-
-// Добавляем анимацию исчезновения
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Проверяем, есть ли сообщение об успешном бронировании в URL
-function checkForSuccessMessage() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
-        showToast('Бронирование успешно оформлено! Спасибо за выбор нашего тура!', 'success', 5000);
-        // Убираем параметр из URL без перезагрузки
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-    }
-}
-
-// Функция открытия модального окна
-function openModal(modal) {
-    modal.style.display = 'block';
-}
-
-// Функция закрытия модального окна
-function closeModal(modal) {
-    modal.style.display = 'none';
-}
-
-// Функция показа информации о туре
-function showTourInfo() {
-    const selectedTourId = parseInt(tourSelect.value);
-    const tour = toursData[selectedTourId];
-    
-    if (tour && tour.id) {
-        const modalBody = document.getElementById('modalBody');
-        const modalTitle = document.getElementById('modalTitle');
-        
-        modalTitle.textContent = tour.title;
-        
-        let imageHtml = '';
-        if (tour.image && tour.image !== '') {
-            imageHtml = `<img src="${tour.image}" alt="${tour.title}" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">`;
-        } else {
-            imageHtml = `<div style="background: #e0e0e0; padding: 40px; text-align: center; border-radius: 8px; margin-bottom: 15px;">Нет изображения</div>`;
-        }
-        
-        modalBody.innerHTML = imageHtml + `
-            <p><strong>Описание:</strong> ${tour.description}</p>
-            <p><strong>Длительность:</strong> ${tour.duration} дней</p>
-            <p><strong>Цена:</strong> ${tour.price} руб.</p>
-            <p><strong>Максимум участников:</strong> ${tour.max_people} чел.</p>
-        `;
-        
-        openModal(tourModal);
-    } else {
-        showErrorModal('Пожалуйста, выберите тур из списка');
-    }
-}
-
-// Функция показа модального окна с ошибкой
-function showErrorModal(message) {
-    const errorModalBody = document.getElementById('errorModalBody');
-    errorModalBody.innerHTML = `<p>${message}</p>`;
-    openModal(errorModal);
-}
-
-// Функция проверки количества человек
-function validatePeopleCount() {
-    const peopleValue = parseInt(peopleInput.value);
-    const selectedTourId = parseInt(tourSelect.value);
-    const tour = toursData[selectedTourId];
-    const peopleErrorDiv = document.getElementById('peopleError');
-    
-    peopleErrorDiv.textContent = '';
-    peopleInput.style.borderColor = '#ddd';
-    peopleInput.style.borderWidth = '1px';
-    peopleInput.style.borderStyle = 'solid';
-    
-    if (isNaN(peopleValue) || peopleInput.value === '') {
-        peopleErrorDiv.textContent = 'Пожалуйста, укажите количество человек';
-        peopleInput.style.borderColor = 'red';
-        return false;
-    }
-    
-    if (peopleValue <= 0) {
-        const errorMsg = 'Количество человек должно быть больше нуля';
-        peopleErrorDiv.textContent = errorMsg;
-        peopleInput.style.borderColor = 'red';
-        showErrorModal(errorMsg);
-        return false;
-    }
-    
-    if (tour && peopleValue > tour.max_people) {
-        const errorMsg = `Количество человек не может превышать ${tour.max_people} для этого тура`;
-        peopleErrorDiv.textContent = errorMsg;
-        peopleInput.style.borderColor = 'red';
-        showErrorModal(errorMsg);
-        return false;
-    }
-    
-    return true;
-}
-
-// Получение элементов DOM
-const tourModal = document.getElementById('tourModal');
-const errorModal = document.getElementById('errorModal');
-const tourSelect = document.getElementById('id_tour');
-const peopleInput = document.getElementById('id_people');
-const bookingForm = document.getElementById('bookingForm');
-const showTourInfoBtn = document.getElementById('showTourInfoBtn');
-
-// Обработчики событий
-if (showTourInfoBtn) {
-    showTourInfoBtn.addEventListener('click', showTourInfo);
-}
-
-if (peopleInput) {
-    peopleInput.addEventListener('input', function() {
-        const peopleValue = parseInt(this.value);
-        const selectedTourId = parseInt(tourSelect.value);
-        const tour = toursData[selectedTourId];
-        const peopleErrorDiv = document.getElementById('peopleError');
-        
-        peopleErrorDiv.textContent = '';
-        this.style.borderColor = '#ddd';
-        
-        if (!isNaN(peopleValue) && this.value !== '') {
-            if (peopleValue <= 0) {
-                peopleErrorDiv.textContent = 'Количество человек должно быть больше нуля';
-                this.style.borderColor = 'red';
-            } else if (tour && peopleValue > tour.max_people) {
-                peopleErrorDiv.textContent = `Максимум для этого тура: ${tour.max_people} человек`;
-                this.style.borderColor = 'red';
-            }
-        }
-    });
-}
-
-if (tourSelect) {
-    tourSelect.addEventListener('change', function() {
-        const peopleErrorDiv = document.getElementById('peopleError');
-        peopleErrorDiv.textContent = '';
-        peopleInput.style.borderColor = '#ddd';
-        
-        if (peopleInput.value !== '') {
-            validatePeopleCount();
-        }
-    });
-}
-
-if (bookingForm) {
-    bookingForm.addEventListener('submit', function(event) {
-        if (!validatePeopleCount()) {
-            event.preventDefault();
-        } else {
-            // Если валидация прошла успешно, показываем стикер о загрузке
-            showToast('Отправка данных...', 'info', 2000);
-        }
-    });
-}
-
-// Закрытие модальных окон
-document.querySelectorAll('.close, .close-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        closeModal(tourModal);
-        closeModal(errorModal);
-    });
-});
-
-window.addEventListener('click', function(event) {
-    if (event.target === tourModal) closeModal(tourModal);
-    if (event.target === errorModal) closeModal(errorModal);
-});
-
-// Проверяем наличие сообщения об успешном бронировании
-checkForSuccessMessage();
-
-// Если есть сообщения от Django, показываем их как стикеры
-const djangoMessages = document.querySelectorAll('.django-message');
-djangoMessages.forEach(msg => {
-    const tags = msg.getAttribute('data-tags');
-    let type = 'success';
-    if (tags === 'error') type = 'error';
-    if (tags === 'warning') type = 'warning';
-    if (tags === 'info') type = 'info';
-    showToast(msg.textContent, type, 4000);
-});
+    window.toursData = {
+        {% for tour in booking_form.fields.tour.queryset %}
+        {{ tour.id }}: {
+            id: {{ tour.id }},
+            title: "{{ tour.title|escapejs }}",
+            description: "{{ tour.description|escapejs|truncatechars:200 }}",
+            image: "{% if tour.image %}{{ tour.image.url }}{% else %}{% endif %}",
+            max_people: {{ tour.max_people }},
+            price: {{ tour.price }},
+            duration: {{ tour.duration }}
+        },
+        {% endfor %}
+    };
 </script>
 
+<script src="{% static 'js/booking_form.js' %}"></script>
 </body>
 </html>

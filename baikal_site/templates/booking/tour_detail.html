@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>{{ tour.title }} - детали тура</title>
-
+{% load static %}
 <style>
 
 body {
-    font-family: Arial;
-    background: #f2f5f7;
+    font-family: Arial, sans-serif;
+    background: #e8f5e9;
     margin: 0;
     padding: 20px;
 }
@@ -19,24 +19,30 @@ body {
     background: white;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.08);
 }
 
 h1 {
     text-align: center;
-    color: #71b378;
+    color: #2d5a2e;
 }
 
 h2 {
-    color: #555;
+    color: #2d5a2e;
     border-bottom: 2px solid #71b378;
     padding-bottom: 10px;
+}
+
+h3 {
+    color: #2d5a2e;
+    margin-top: 25px;
+    margin-bottom: 15px;
 }
 
 .nav {
     margin-bottom: 20px;
     padding: 10px;
-    background-color: #f0f0f0;
+    background-color: #f1f8e9;
     border-radius: 5px;
     text-align: center;
 }
@@ -44,32 +50,35 @@ h2 {
 .nav a {
     margin: 0 15px;
     text-decoration: none;
-    color: #007bff;
+    color: #71b378;
     font-weight: bold;
+    transition: color 0.3s ease;
 }
 
 .nav a:hover {
+    color: #5a9e60;
     text-decoration: underline;
 }
 
 .tour-info {
-    background-color: #f9f9f9;
+    background-color: #f1f8e9;
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
+    border-left: 4px solid #71b378;
 }
 
 .info-row {
     margin-bottom: 15px;
     padding: 8px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #c8e6c9;
 }
 
 .info-label {
     font-weight: bold;
     display: inline-block;
     width: 200px;
-    color: #555;
+    color: #2d5a2e;
 }
 
 .info-value {
@@ -86,14 +95,20 @@ h2 {
     max-width: 100%;
     max-height: 300px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 15px rgba(113, 179, 120, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.tour-image img:hover {
+    transform: scale(1.02);
 }
 
 .booking-info {
-    background-color: #e8f4e8;
+    background-color: #f0f9f0;
     padding: 20px;
     border-radius: 8px;
     margin: 20px 0;
+    border-left: 4px solid #71b378;
 }
 
 table {
@@ -103,7 +118,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #ddd;
+    border: 1px solid #c8e6c9;
     padding: 10px;
     text-align: left;
 }
@@ -111,6 +126,16 @@ th, td {
 th {
     background-color: #71b378;
     color: white;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f1f8e9;
+}
+
+tr:hover {
+    background-color: #e8f5e9;
+    transition: background-color 0.3s ease;
 }
 
 .actions {
@@ -125,6 +150,7 @@ th {
     text-decoration: none;
     border-radius: 5px;
     font-size: 16px;
+    transition: all 0.3s ease;
 }
 
 .btn-back {
@@ -132,38 +158,86 @@ th {
     color: white;
 }
 
-.btn-edit {
-    background-color: #ffc107;
-    color: black;
-}
-
 .btn-back:hover {
     background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-edit {
+    background-color: #71b378;
+    color: white;
 }
 
 .btn-edit:hover {
-    background-color: #e0a800;
+    background-color: #5a9e60;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .docs-list {
     margin-top: 15px;
+    list-style: none;
+    padding: 0;
 }
 
 .docs-list li {
     margin: 10px 0;
+    padding: 10px;
+    background-color: #f1f8e9;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.docs-list li:hover {
+    background-color: #e8f5e9;
+    transform: translateX(5px);
 }
 
 .docs-list a {
-    color: #007bff;
+    color: #71b378;
     text-decoration: none;
+    font-weight: bold;
 }
 
 .docs-list a:hover {
+    color: #5a9e60;
     text-decoration: underline;
 }
 
-</style>
+/* Статус мест */
+.seats-available {
+    color: #28a745;
+    font-weight: bold;
+}
 
+.seats-limited {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.seats-full {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.warning-text {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.info-text {
+    background-color: #f0f9f0;
+    border-left: 4px solid #71b378;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+</style>
 </head>
 
 <body>
@@ -222,8 +296,35 @@ th {
     
     <div class="info-row">
         <span class="info-label">Свободных мест:</span>
-        <span class="info-value"><strong>{{ tour.max_people|add:"-5"|add:total_booked }}</strong></span>
+        <span class="info-value">
+            <strong class="
+                {% if tour.max_people|add:"-"|add:total_booked <= 0 %}seats-full
+                {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}seats-limited
+                {% else %}seats-available{% endif %}">
+                {% with free_seats=tour.max_people|add:"-"|add:total_booked %}
+                    {% if free_seats <= 0 %}
+                        0 (нет свободных мест)
+                    {% else %}
+                        {{ free_seats }}
+                    {% endif %}
+                {% endwith %}
+            </strong>
+        </span>
     </div>
+    
+    {% if tour.max_people|add:"-"|add:total_booked <= 0 %}
+    <div class="warning-text">
+        ⚠️ Внимание: На данный тур нет свободных мест! Бронирование недоступно.
+    </div>
+    {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}
+    <div class="warning-text">
+        🎯 Осталось всего {{ tour.max_people|add:"-"|add:total_booked }} мест! Торопитесь!
+    </div>
+    {% else %}
+    <div class="info-text">
+        ✅ Есть свободные места. Вы можете забронировать тур!
+    </div>
+    {% endif %}
     
     {% if bookings %}
     <h3>Список бронирований:</h3>
@@ -248,7 +349,9 @@ th {
         </tbody>
     </table>
     {% else %}
-    <p>На этот тур пока нет бронирований. Будьте первым!</p>
+    <div class="info-text">
+        📌 На этот тур пока нет бронирований. Будьте первым!
+    </div>
     {% endif %}
     
     {% if consent_docs %}
@@ -256,7 +359,7 @@ th {
     <ul class="docs-list">
         {% for doc in consent_docs %}
         <li>
-            <a href="{{ doc.document.url }}" target="_blank">
+            📄 <a href="{{ doc.document.url }}" target="_blank">
                 Согласие на обработку данных - {{ doc.booking.name }}
             </a>
         </li>
@@ -266,8 +369,8 @@ th {
 </div>
 
 <div class="actions">
-    <a href="{% url 'tour_list' %}" class="btn btn-back">Назад к списку туров</a>
-    <a href="{% url 'tour_edit' tour.id %}" class="btn btn-edit">Редактировать тур</a>
+    <a href="{% url 'tour_list' %}" class="btn btn-back">← Назад к списку туров</a>
+    <a href="{% url 'tour_edit' tour.id %}" class="btn btn-edit">✏️ Редактировать тур</a>
 </div>
 
 </div>
