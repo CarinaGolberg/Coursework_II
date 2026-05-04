@@ -125,7 +125,7 @@ def tour_restore_view(request, pk):
     return redirect('tour_list')
 
 
-# ============= AJAX VIEWS =============
+# AJAX VIEWS
 
 @require_http_methods(["GET"])
 def get_tour_details_ajax(request):
@@ -170,7 +170,7 @@ def get_tour_details_ajax(request):
 @require_http_methods(["GET"])
 def calculate_price_ajax(request):
     """
-    AJAX-запрос 2: Расчет общей стоимости тура (без скидки)
+    AJAX-запрос 2: Расчет общей стоимости тура
     """
     tour_id = request.GET.get('tour_id')
     people_count = request.GET.get('people_count')
@@ -194,7 +194,7 @@ def calculate_price_ajax(request):
                 'error': 'Количество человек должно быть больше 0'
             }, status=400)
         
-        # Простой расчет без скидки
+        # Расчет стоимости
         total_price = tour.price * people
         
         return JsonResponse({

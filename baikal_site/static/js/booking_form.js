@@ -1,5 +1,3 @@
-// booking_form.js - Исправленная версия с блокировкой кнопки
-
 // Функция для получения CSRF токена из куки
 function getCookie(name) {
     let cookieValue = null;
@@ -16,7 +14,67 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Функция для обновления состояния кнопки
+// Функция для плавного показа/скрытия блока
+function toggleInfoBlock(show, hasContent) {
+    const infoBlock = document.getElementById('tourInfoBlock');
+    if (!infoBlock) return;
+    
+    if (show && hasContent) {
+        infoBlock.style.maxHeight = '500px';
+        infoBlock.style.padding = '15px';
+        infoBlock.style.marginTop = '15px';
+    } else {
+        infoBlock.style.maxHeight = '0';
+        infoBlock.style.padding = '0';
+        infoBlock.style.marginTop = '0';
+    }
+}
+
+// Функция для отображения стикера
+function showToast(message, type = 'success', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = '✓';
+    if (type === 'error') icon = '✗';
+    if (type === 'info') icon = 'ℹ';
+    if (type === 'warning') icon = '⚠';
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-message">${message}</div>
+        <button class="toast-close">&times;</button>
+        <div class="progress-bar"></div>
+    `;
+    
+    container.appendChild(toast);
+    
+    const progressBar = toast.querySelector('.progress-bar');
+    if (progressBar) {
+        progressBar.style.animation = `progress ${duration/1000}s linear forwards`;
+    }
+    
+    const closeBtn = toast.querySelector('.toast-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            toast.remove();
+        });
+    }
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, 300);
+        }
+    }, duration);
+}
+
+// Функция обновления кнопки
 function updateSubmitButton(isAvailable) {
     const submitButton = document.querySelector('#bookingForm button[type="submit"]');
     if (!submitButton) return;
@@ -34,71 +92,176 @@ function updateSubmitButton(isAvailable) {
     }
 }
 
-// AJAX запрос 1: Получение детальной информации о туре
-async function getTourDetails(tourId) {
-    if (!tourId) return;
+// AJAX с Deferred-объектами
+
+// Прелоадер
+function showPreloader() {
+    removePreloader();
     
-    const infoBlock = document.getElementById('tourInfoBlock');
-    const infoText = document.getElementById('tourInfoText');
+    const preloader = document.createElement('div');
+    preloader.id = 'customPreloader';
+    preloader.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px);
+    `;
     
-    if (infoBlock) {
-        infoBlock.style.display = 'block';
-        infoText.innerHTML = '🔄 Загрузка информации о туре...';
-    }
+    preloader.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        ">
+            <div style="
+                width: 50px;
+                height: 50px;
+                border: 4px solid #f0f9f0;
+                border-top: 4px solid #71b378;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 15px;
+            "></div>
+            <div style="font-size: 16px; color: #2d5a2e; font-weight: bold;">🔍 Загрузка информации...</div>
+        </div>
+    `;
     
-    try {
-        const response = await fetch(`/ajax/tour-details/?tour_id=${tourId}`);
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-            const tour = data.tour;
-            const availableSeats = tour.available_seats;
-            const seatsStatus = availableSeats > 0 
-                ? `<span style="color: #28a745;">✅ Свободно мест: ${availableSeats}</span>` 
-                : `<span style="color: #dc3545;">❌ Нет свободных мест</span>`;
-            
-            // Блокируем или разблокируем кнопку в зависимости от наличия мест
-            updateSubmitButton(availableSeats > 0);
-            
-            let imageHtml = '';
-            if (tour.image_url) {
-                imageHtml = `<img src="${tour.image_url}" alt="${tour.title}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">`;
-            } else {
-                imageHtml = `<div style="background: #e0e0e0; padding: 40px; text-align: center; border-radius: 8px; margin-bottom: 10px;">🖼️ Нет изображения</div>`;
-            }
-            
-            if (infoText) {
-                infoText.innerHTML = `
-                    ${imageHtml}
-                    <div style="font-size: 14px;">
-                        <strong>📋 ${tour.title}</strong><br>
-                        📝 ${tour.description}<br><br>
-                        ⏱ Длительность: ${tour.duration} дней<br>
-                        💰 Цена: ${tour.price} руб/чел<br>
-                        👥 Максимум: ${tour.max_people} чел.<br>
-                        📊 Уже забронировано: ${tour.total_booked} чел.<br>
-                        ${seatsStatus}
-                    </div>
-                `;
-            }
-        } else {
-            updateSubmitButton(true); // При ошибке не блокируем
-            showToast(data.error || 'Ошибка загрузки информации о туре', 'error', 3000);
-            if (infoText) {
-                infoText.innerHTML = '<span style="color: #dc3545;">❌ Не удалось загрузить информацию</span>';
-            }
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-    } catch (error) {
-        console.error('AJAX Error:', error);
-        updateSubmitButton(true); // При ошибке не блокируем
-        showToast('Ошибка соединения при загрузке информации', 'error', 3000);
-        if (infoText) {
-            infoText.innerHTML = '<span style="color: #dc3545;">❌ Ошибка соединения</span>';
-        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(preloader);
+}
+
+function hidePreloader() {
+    const preloader = document.getElementById('customPreloader');
+    if (preloader) {
+        preloader.remove();
     }
 }
 
-// AJAX запрос 2: Расчет стоимости тура (без скидки)
+function removePreloader() {
+    const preloader = document.getElementById('customPreloader');
+    if (preloader) preloader.remove();
+}
+
+// AJAX запрос с Deferred
+function getTourDetailsDeferred(tourId) {
+    const deferred = $.Deferred();
+    
+    $.ajax({
+        url: `/ajax/tour-details/?tour_id=${tourId}`,
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(data) {
+            deferred.resolve(data);
+        },
+        error: function(xhr, status, error) {
+            let errorMessage = 'Ошибка загрузки информации';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            } else if (status === 'timeout') {
+                errorMessage = 'Превышено время ожидания';
+            }
+            deferred.reject(errorMessage);
+        }
+    });
+    
+    return deferred.promise();
+}
+
+// Отображение полной информации о туре в блоке (без модального окна)
+function displayTourInfo(tour) {
+    const infoText = document.getElementById('tourInfoText');
+    if (!infoText) return;
+    
+    const availableSeats = tour.available_seats;
+    const seatsStatus = availableSeats > 0 
+        ? `<span style="color: #28a745; font-weight: bold;">✅ Свободно мест: ${availableSeats}</span>` 
+        : `<span style="color: #dc3545; font-weight: bold;">❌ Нет свободных мест</span>`;
+    
+    let imageHtml = '';
+    if (tour.image_url) {
+        imageHtml = `<img src="${tour.image_url}" alt="${tour.title}" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">`;
+    }
+    
+    infoText.innerHTML = `
+        ${imageHtml}
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between;">
+            <div style="flex: 1;">
+                <div style="margin-bottom: 8px;">
+                    <strong>📋 ${tour.title}</strong>
+                </div>
+                <div style="margin-bottom: 8px; font-size: 13px; color: #555;">
+                    ${tour.description.substring(0, 150)}${tour.description.length > 150 ? '...' : ''}
+                </div>
+            </div>
+            <div style="min-width: 180px;">
+                <div style="margin-bottom: 5px;">⏱ Длительность: ${tour.duration} дней</div>
+                <div style="margin-bottom: 5px;">💰 Цена: ${tour.price} руб/чел</div>
+                <div style="margin-bottom: 5px;">👥 Максимум: ${tour.max_people} чел.</div>
+                <div>📊 Забронировано: ${tour.total_booked} чел.</div>
+            </div>
+        </div>
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #c8e6c9; text-align: center;">
+            ${seatsStatus}
+        </div>
+    `;
+    
+    updateSubmitButton(availableSeats > 0);
+    toggleInfoBlock(true, true);
+}
+
+// Основная функция получения информации о туре
+function loadTourInfo(tourId) {
+    if (!tourId) {
+        toggleInfoBlock(false, false);
+        return;
+    }
+    
+    const infoText = document.getElementById('tourInfoText');
+    if (infoText) {
+        infoText.innerHTML = '<div style="text-align: center; padding: 15px;">🔄 Загрузка информации о туре...</div>';
+        toggleInfoBlock(true, true);
+    }
+    
+    getTourDetailsDeferred(tourId)
+        .done(function(data) {
+            if (data.success) {
+                displayTourInfo(data.tour);
+                // Показываем toast только при ошибках, при успехе - без уведомления
+            } else {
+                const infoText = document.getElementById('tourInfoText');
+                if (infoText) {
+                    infoText.innerHTML = `<span style="color: #dc3545;">❌ ${data.error || 'Ошибка загрузки'}</span>`;
+                }
+            }
+        })
+        .fail(function(errorMessage) {
+            const infoText = document.getElementById('tourInfoText');
+            if (infoText) {
+                infoText.innerHTML = `<span style="color: #dc3545;">❌ ${errorMessage}</span>`;
+            }
+            showToast(errorMessage, 'error', 3000);
+        });
+}
+
+// ============= Расчет стоимости =============
 async function calculatePrice(tourId, peopleCount) {
     if (!tourId || !peopleCount || peopleCount <= 0) return;
     
@@ -108,17 +271,13 @@ async function calculatePrice(tourId, peopleCount) {
     const tour = window.toursData[tourId];
     if (!tour) return;
     
-    // Проверяем, не превышает ли количество человек максимум
     if (peopleCount > tour.max_people) {
         priceBlock.style.display = 'block';
         priceBlock.innerHTML = `
             <div style="background: #fee; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #dc3545;">
-                <div style="color: #dc3545;">
-                    ⚠️ Количество человек не может превышать ${tour.max_people}
-                </div>
+                <div style="color: #dc3545;">⚠️ Максимум для этого тура: ${tour.max_people} человек</div>
             </div>
         `;
-        updateSubmitButton(true); // При превышении лимита не блокируем, а показываем ошибку
         return;
     }
     
@@ -135,38 +294,25 @@ async function calculatePrice(tourId, peopleCount) {
             
             priceBlock.innerHTML = `
                 <div style="background: #f0f9f0; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #71b378;">
-                    <strong style="color: #2d5a2e;">💰 Расчет стоимости:</strong><br>
-                    <small>${calc.price_per_person} руб. × ${calc.people_count} чел. = ${totalPrice} руб.</small>
-                    <div style="font-size: 20px; font-weight: bold; margin-top: 10px; color: #71b378;">
-                        Итого: ${totalPrice} ${calc.currency}
+                    <strong style="color: #2d5a2e;">💰 Итоговая стоимость:</strong>
+                    <div style="font-size: 22px; font-weight: bold; margin-top: 8px; color: #71b378;">
+                        ${totalPrice} ${calc.currency}
                     </div>
+                    <small style="color: #666;">${calc.price_per_person} руб. × ${calc.people_count} чел.</small>
                 </div>
             `;
-            updateSubmitButton(true); // Кнопка активна, если есть места (проверим при отправке)
-        } else {
-            priceBlock.innerHTML = `
-                <div style="background: #fee; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #dc3545;">
-                    <div style="color: #dc3545;">
-                        ❌ ${data.error || 'Ошибка расчета стоимости'}
-                    </div>
-                </div>
-            `;
-            showToast(data.error || 'Ошибка расчета стоимости', 'error', 3000);
         }
     } catch (error) {
-        console.error('AJAX Error:', error);
+        console.error('Error:', error);
         priceBlock.innerHTML = `
             <div style="background: #fee; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #dc3545;">
-                <div style="color: #dc3545;">
-                    ❌ Ошибка соединения при расчете стоимости
-                </div>
+                <div style="color: #dc3545;">❌ Ошибка расчета стоимости</div>
             </div>
         `;
-        showToast('Ошибка соединения при расчете стоимости', 'error', 3000);
     }
 }
 
-// Инициализация при загрузке страницы
+// Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     const toursData = window.toursData || {};
     
@@ -175,24 +321,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const tourSelect = document.getElementById('id_tour');
     const peopleInput = document.getElementById('id_people');
     const bookingForm = document.getElementById('bookingForm');
-    const showTourInfoBtn = document.getElementById('showTourInfoBtn');
     
-    // При загрузке страницы кнопка активна
-    updateSubmitButton(true);
-    
-    // Обработчик для кнопки информации о туре
-    if (showTourInfoBtn && tourSelect) {
-        showTourInfoBtn.addEventListener('click', function() {
-            const selectedTourId = tourSelect.value;
-            if (selectedTourId) {
-                getTourDetails(selectedTourId);
-            } else {
-                showToast('Пожалуйста, выберите тур', 'warning', 2000);
-            }
+    // При выборе тура - автоматически загружаем информацию
+    if (tourSelect) {
+        // Загружаем информацию для первого выбранного тура
+        if (tourSelect.value) {
+            loadTourInfo(tourSelect.value);
+        }
+        
+        // Обработчик изменения выбора
+        tourSelect.addEventListener('change', function() {
+            loadTourInfo(this.value);
         });
     }
     
-    // Обработчик для расчета стоимости
+    // Расчет стоимости при изменении количества человек
     if (peopleInput && tourSelect) {
         let debounceTimer;
         
@@ -232,35 +375,26 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!isNaN(peopleValue) && this.value !== '') {
                 if (peopleValue <= 0) {
-                    if (peopleErrorDiv) peopleErrorDiv.textContent = 'Количество человек должно быть больше нуля';
+                    peopleErrorDiv.textContent = 'Количество человек должно быть больше нуля';
                     this.style.borderColor = 'red';
                     updateSubmitButton(false);
                 } else if (tour && peopleValue > tour.max_people) {
-                    if (peopleErrorDiv) peopleErrorDiv.textContent = `Максимум для этого тура: ${tour.max_people} человек`;
+                    peopleErrorDiv.textContent = `Максимум для этого тура: ${tour.max_people} человек`;
                     this.style.borderColor = 'red';
                     updateSubmitButton(false);
                 } else {
-                    // Если количество корректное, кнопка будет разблокирована, если есть места
-                    // Места проверяются в getTourDetails
+                    updateSubmitButton(true);
                 }
             }
         });
     }
     
-    // Обработка отправки формы - дополнительная проверка перед отправкой
+    // Отправка формы
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(event) {
             const peopleValue = parseInt(peopleInput.value);
             const selectedTourId = parseInt(tourSelect.value);
             const tour = toursData[selectedTourId];
-            
-            // Проверяем, не заблокирована ли кнопка
-            const submitButton = document.querySelector('#bookingForm button[type="submit"]');
-            if (submitButton && submitButton.disabled) {
-                event.preventDefault();
-                showToast('Бронирование временно недоступно (нет свободных мест)', 'error', 3000);
-                return;
-            }
             
             if (isNaN(peopleValue) || peopleValue <= 0) {
                 event.preventDefault();
@@ -272,33 +406,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Закрытие модальных окон
-    const closeButtons = document.querySelectorAll('.close, .close-btn');
-    closeButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+    // Закрытие модальных окон (если они еще нужны для ошибок)
+    document.querySelectorAll('.close, .close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
             if (tourModal) tourModal.style.display = 'none';
             if (errorModal) errorModal.style.display = 'none';
         });
     });
     
-    if (tourModal && errorModal) {
-        window.addEventListener('click', function(event) {
-            if (event.target === tourModal) tourModal.style.display = 'none';
-            if (event.target === errorModal) errorModal.style.display = 'none';
-        });
-    }
+    window.addEventListener('click', (event) => {
+        if (event.target === tourModal) tourModal.style.display = 'none';
+        if (event.target === errorModal) errorModal.style.display = 'none';
+    });
     
     // Проверка успешного бронирования
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === '1') {
+    if (window.location.search.includes('success=1')) {
         showToast('Бронирование успешно оформлено! Спасибо за выбор нашего тура!', 'success', 5000);
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
     
     // Сообщения от Django
-    const djangoMessages = document.querySelectorAll('.django-message');
-    djangoMessages.forEach(msg => {
+    document.querySelectorAll('.django-message').forEach(msg => {
         const tags = msg.getAttribute('data-tags');
         let type = 'success';
         if (tags === 'error') type = 'error';

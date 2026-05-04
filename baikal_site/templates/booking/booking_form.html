@@ -5,6 +5,7 @@
 <title>Бронирование тура</title>
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/booking_form.css' %}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
@@ -36,11 +37,10 @@
     <label>Выберите тур</label>
     <div class="select-with-info">
         {{ booking_form.tour }}
-        <button type="button" class="tour-info-btn" id="showTourInfoBtn">Информация о туре</button>
     </div>
-    <!-- Блок для отображения дополнительной информации о туре (AJAX) -->
-    <div id="tourInfoBlock" style="margin-top: 10px; padding: 15px; background: #f0f9f0; border-radius: 8px; display: none; border-left: 4px solid #71b378;">
-        <div id="tourInfoText"></div>
+    <!-- Блок для информации о туре - появляется плавно при выборе -->
+    <div id="tourInfoBlock" style="margin-top: 15px; padding: 0; max-height: 0; overflow: hidden; transition: all 0.4s ease-out; background: #f0f9f0; border-radius: 8px; border-left: 4px solid #71b378;">
+        <div id="tourInfoText" style="padding: 0 15px;"></div>
     </div>
     {% if booking_form.tour.errors %}
         <ul class="errorlist">{{ booking_form.tour.errors }}</ul>
@@ -75,7 +75,6 @@
     <label>Количество человек</label>
     {{ booking_form.people }}
     <div id="peopleError" style="color: red; font-size: 14px; margin-top: 5px;"></div>
-    <!-- Блок для отображения рассчитанной цены (AJAX) -->
     <div id="priceCalculation" style="display: none;"></div>
     {% if booking_form.people.errors %}
         <ul class="errorlist">{{ booking_form.people.errors }}</ul>
@@ -96,7 +95,7 @@
 
 </div>
 
-<!-- Модальное окно для информации о туре -->
+<!-- Модальное окно для информации о туре (детальная информация) -->
 <div id="tourModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
