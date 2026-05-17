@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'booking' # Бронирование
+    'booking', # Бронирование
+    'accounts', # Профиль пользователя
 ]
 
 MIDDLEWARE = [
@@ -127,6 +128,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Кастомная модель пользователя
+AUTH_USER_MODEL = 'accounts.User'
+
+# Настройки email (для разработки используем консоль)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@baikal-tour.com'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = "media"

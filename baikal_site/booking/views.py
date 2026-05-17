@@ -1,15 +1,15 @@
 """
 Отображение форм
 """
+from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from datetime import datetime
-
+from .models import Tour, Booking, ConsentDocument, TourSchedule
 from .forms import BookingForm, ConsentForm, TourForm
-from .models import Tour, Booking, ConsentDocument
 
 
 def booking_view(request):
@@ -38,7 +38,8 @@ def booking_view(request):
 
     # Передаем все туры для AJAX запросов
     tours = Tour.objects.filter(removed=False)
-    
+
+
     return render(
         request,
         "booking/booking_form.html",
@@ -54,13 +55,46 @@ def tour_list_view(request):
     """Страница со списком всех не удаленных туров"""
     tours = Tour.objects.filter(removed=False)
     
-    return render(
-        request,
-        "booking/tour_list.html",
-        {
-            "tours": tours
-        }
-    )
+    # Поиск
+    search_query = request.GET.get('search', '')
+    if search_query:
+        tours = tours.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Фильтр по цене
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    if min_price:
+        tours = tours.filter(price__gte=min_price)
+    if max_price:
+        tours = tours.filter(price__lte=max_price)
+    
+    # Фильтр по длительности
+    duration = request.GET.get('duration', '')
+    if duration:
+        tours = tours.filter(duration=duration)
+    
+    # Пагинация
+    paginator = Paginator(tours, 6)  # 6 туров на страницу
+    page_number = request.GET.get('page')
+    tours_page = paginator.get_page(page_number)
+    
+    # Получаем все возможные значения длительности для фильтра
+    durations = Tour.objects.filter(removed=False).values_list('duration', flat=True).distinct()
+    
+    context = {
+        'tours': tours_page,
+        'search_query': search_query,
+        'min_price': min_price,
+        'max_price': max_price,
+        'selected_duration': duration,
+        'durations': durations,
+        'is_paginated': tours_page.has_other_pages(),
+    }
+    
+    return render(request, "booking/tour_list.html", context)
 
 
 def tour_detail_view(request, pk):
@@ -129,23 +163,35 @@ def tour_restore_view(request, pk):
 
 @require_http_methods(["GET"])
 def get_tour_details_ajax(request):
-    """
-    AJAX-запрос 1: Получение детальной информации о туре
-    """
+    """AJAX-запрос: Получение детальной информации о туре и его расписании"""
     tour_id = request.GET.get('tour_id')
     
     if not tour_id:
-        return JsonResponse({
-            'error': 'Не указан ID тура'
-        }, status=400)
+        return JsonResponse({'error': 'Не указан ID тура'}, status=400)
     
     try:
         tour = Tour.objects.get(id=tour_id, removed=False)
         
-        # Получаем общее количество забронированных мест
-        bookings = Booking.objects.filter(tour=tour)
-        total_booked = sum(booking.people for booking in bookings)
+        schedules = TourSchedule.objects.filter(
+            tour=tour, 
+            is_active=True,
+            start_date__gte=date.today()
+        ).order_by('start_date')
         
+        schedules_data = []
+        for schedule in schedules:
+            schedules_data.append({
+                'id': schedule.id,
+                'start_date': schedule.start_date.strftime('%d.%m.%Y'),
+                'end_date': schedule.end_date.strftime('%d.%m.%Y'),
+                'available_seats': schedule.available_seats,
+                'total_booked': schedule.total_booked,
+                'is_available': schedule.available_seats > 0
+            })
+      
+        all_bookings = Booking.objects.filter(tour=tour)
+        total_booked_all = sum(booking.people for booking in all_bookings)
+       
         return JsonResponse({
             'success': True,
             'tour': {
@@ -155,64 +201,84 @@ def get_tour_details_ajax(request):
                 'duration': tour.duration,
                 'price': str(tour.price),
                 'max_people': tour.max_people,
-                'total_booked': total_booked,
-                'available_seats': tour.max_people - total_booked,
+                'total_booked_all': total_booked_all,
                 'image_url': tour.image.url if tour.image else None,
-            }
+            },
+            'schedules': schedules_data
         })
-        
+
     except Tour.DoesNotExist:
-        return JsonResponse({
-            'error': 'Тур не найден'
-        }, status=404)
+        return JsonResponse({'error': 'Тур не найден'}, status=404)
 
 
 @require_http_methods(["GET"])
+def get_schedule_availability_ajax(request):
+    """AJAX-запрос: Получение доступности конкретного расписания с учетом количества человек"""
+    schedule_id = request.GET.get('schedule_id')
+    people_count = request.GET.get('people_count', 1)
+    
+    if not schedule_id:
+        return JsonResponse({'error': 'Не указан ID расписания'}, status=400)
+    
+    try:
+        schedule = TourSchedule.objects.get(id=schedule_id, is_active=True)
+        
+        # Получаем количество человек из запроса
+        try:
+            requested_people = int(people_count)
+        except ValueError:
+            requested_people = 1
+        
+        # Проверяем доступность
+        available_seats = schedule.available_seats
+        is_available = available_seats >= requested_people
+        
+        return JsonResponse({
+            'success': True,
+            'schedule': {
+                'id': schedule.id,
+                'start_date': schedule.start_date.strftime('%d.%m.%Y'),
+                'end_date': schedule.end_date.strftime('%d.%m.%Y'),
+                'available_seats': available_seats,
+                'total_booked': schedule.total_booked,
+                'max_people': schedule.tour.max_people,
+                'is_available': is_available,
+                'requested_people': requested_people
+            }
+        })
+        
+    except TourSchedule.DoesNotExist:
+        return JsonResponse({'error': 'Расписание не найдено'}, status=404)
+    
+
+@require_http_methods(["GET"])
 def calculate_price_ajax(request):
-    """
-    AJAX-запрос 2: Расчет общей стоимости тура
-    """
+    """AJAX-запрос: Расчет стоимости тура"""
     tour_id = request.GET.get('tour_id')
     people_count = request.GET.get('people_count')
     
-    if not tour_id:
-        return JsonResponse({
-            'error': 'Не указан ID тура'
-        }, status=400)
-    
-    if not people_count:
-        return JsonResponse({
-            'error': 'Не указано количество человек'
-        }, status=400)
+    if not tour_id or not people_count:
+        return JsonResponse({'error': 'Не указаны параметры'}, status=400)
     
     try:
         tour = Tour.objects.get(id=tour_id, removed=False)
         people = int(people_count)
         
         if people <= 0:
-            return JsonResponse({
-                'error': 'Количество человек должно быть больше 0'
-            }, status=400)
+            return JsonResponse({'error': 'Количество человек должно быть больше 0'}, status=400)
         
-        # Расчет стоимости
         total_price = tour.price * people
         
         return JsonResponse({
             'success': True,
             'calculation': {
                 'tour_id': tour.id,
-                'tour_title': tour.title,
                 'price_per_person': str(tour.price),
                 'people_count': people,
+                'total_price': str(total_price),
                 'currency': 'руб.'
             }
         })
         
     except Tour.DoesNotExist:
-        return JsonResponse({
-            'error': 'Тур не найден'
-        }, status=404)
-    except ValueError:
-        return JsonResponse({
-            'error': 'Неверное количество человек'
-        }, status=400)
+        return JsonResponse({'error': 'Тур не найден'}, status=404)

@@ -1,77 +1,42 @@
 /* Основные стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #e8f5e9;
+    padding: 20px;
+    min-height: 100vh;
 }
 
 .container {
-    width: 600px;
-    margin: auto;
+    max-width: 700px;
+    margin: 0 auto;
     background: white;
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.08);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
     text-align: center;
     color: #2d5a2e;
+    margin-bottom: 30px;
+    font-size: 28px;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
-input, select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #c8e6c9;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: #71b378;
-    box-shadow: 0 0 5px rgba(113, 179, 120, 0.3);
-}
-
-button {
-    padding: 12px 25px;
-    background: #71b378;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    display: block;
-    margin: 20px auto;
-    transition: background 0.3s ease;
-}
-
-button:hover {
-    background: #5a9e60;
-}
-
-.tour-card {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #c8e6c9;
-    border-radius: 10px;
-    background: #f1f8e9;
-}
-
-.tour-card img {
-    width: 100%;
-    border-radius: 10px;
-}
-
+/* Навигация */
 .nav {
-    margin-bottom: 20px;
-    padding: 10px;
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 12px 20px;
     background-color: #f1f8e9;
-    border-radius: 5px;
+    border-radius: 10px;
     text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .nav a {
@@ -79,23 +44,132 @@ button:hover {
     text-decoration: none;
     color: #71b378;
     font-weight: bold;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    display: inline-block;
 }
 
 .nav a:hover {
     color: #5a9e60;
-    text-decoration: underline;
+    transform: translateY(-2px);
 }
 
+/* Формы */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2d5a2e;
+    font-size: 14px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #c8e6c9;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #71b378;
+    box-shadow: 0 0 0 3px rgba(113, 179, 120, 0.1);
+}
+
+select {
+    cursor: pointer;
+    background-color: white;
+}
+
+select option:disabled {
+    color: #999;
+    background-color: #f5f5f5;
+}
+
+/* Кнопки */
+button {
+    padding: 14px 30px;
+    background: #71b378;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: block;
+    margin: 30px auto 0;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+
+button:hover:not(:disabled) {
+    background: #5a9e60;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(113, 179, 120, 0.3);
+}
+
+button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Блок информации о туре */
+#tourInfoBlock {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f0f9f0;
+    border-radius: 10px;
+    border-left: 4px solid #71b378;
+    margin-top: 15px;
+}
+
+#tourInfoText {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#tourInfoText img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+/* Блок расписания */
+#scheduleGroup {
+    animation: fadeInUp 0.4s ease;
+}
+
+#scheduleInfo {
+    margin-top: 10px;
+}
+
+#scheduleInfo div {
+    animation: slideIn 0.3s ease;
+}
+
+/* Блок расчета стоимости */
+#priceCalculation {
+    margin-top: 10px;
+    animation: slideUp 0.3s ease;
+}
+
+/* Ошибки */
 .errorlist {
     color: #dc3545;
     list-style: none;
     padding: 0;
-    font-size: 14px;
+    font-size: 12px;
     margin-top: 5px;
 }
 
-/* Стили для модального окна */
+/* Модальные окна */
 .modal {
     display: none;
     position: fixed;
@@ -104,20 +178,174 @@ button:hover {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
 }
 
 .modal-content {
     background-color: white;
     margin: 5% auto;
-    padding: 0;
-    width: 500px;
-    max-width: 90%;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 550px;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     animation: slideDown 0.3s ease;
+    overflow: hidden;
 }
 
+.modal-header {
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #71b378 0%, #5a9e60 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.close {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.close:hover {
+    color: #ddd;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 22px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-body img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.modal-body p {
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.modal-footer {
+    padding: 15px 22px;
+    background-color: #f1f8e9;
+    text-align: right;
+}
+
+.modal-footer button {
+    margin: 0;
+    padding: 8px 20px;
+    width: auto;
+    display: inline-block;
+}
+
+.error-modal .modal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+/* Стикеры (toast-уведомления) */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 14px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 400px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+    color: white;
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+    color: white;
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+    color: #333;
+}
+
+.toast-icon {
+    font-size: 20px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    margin: 0;
+    width: auto;
+}
+
+.toast-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: none;
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.5);
+    animation: progress 3s linear forwards;
+}
+
+/* Анимации */
 @keyframes slideDown {
     from {
         transform: translateY(-50px);
@@ -127,129 +355,6 @@ button:hover {
         transform: translateY(0);
         opacity: 1;
     }
-}
-
-.modal-header {
-    padding: 15px 20px;
-    background-color: #71b378;
-    color: white;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-}
-
-.close {
-    color: white;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: #ddd;
-}
-
-.modal-body {
-    padding: 20px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.modal-body img {
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-.modal-body p {
-    line-height: 1.5;
-    color: #333;
-}
-
-.modal-footer {
-    padding: 15px 20px;
-    background-color: #f1f8e9;
-    border-radius: 0 0 10px 10px;
-    text-align: right;
-}
-
-.modal-footer button {
-    margin: 0;
-    padding: 8px 20px;
-    background-color: #71b378;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.modal-footer button:hover {
-    background-color: #5a9e60;
-}
-
-.error-modal .modal-header {
-    background-color: #dc3545;
-}
-
-.error-modal .modal-footer button {
-    background-color: #dc3545;
-}
-
-.error-modal .modal-footer button:hover {
-    background-color: #c82333;
-}
-
-.tour-info-btn {
-    background-color: #17a2b8;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 12px;
-    margin-left: 10px;
-}
-
-.tour-info-btn:hover {
-    background-color: #138496;
-}
-
-.select-with-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.select-with-info select {
-    flex: 1;
-}
-
-/* Стили для стикеров (toast-уведомлений) */
-.toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-}
-
-.toast {
-    background-color: #28a745;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-width: 250px;
-    animation: slideInRight 0.3s ease;
-    position: relative;
 }
 
 @keyframes slideInRight {
@@ -263,75 +368,37 @@ button:hover {
     }
 }
 
-@keyframes slideOutRight {
+@keyframes fadeInUp {
     from {
-        transform: translateX(0);
-        opacity: 1;
+        opacity: 0;
+        transform: translateY(20px);
     }
     to {
-        transform: translateX(100%);
-        opacity: 0;
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-.toast-success {
-    background-color: #28a745;
-    border-left: 5px solid #1e7e34;
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.toast-error {
-    background-color: #dc3545;
-    border-left: 5px solid #bd2130;
-}
-
-.toast-info {
-    background-color: #17a2b8;
-    border-left: 5px solid #117a8b;
-}
-
-.toast-warning {
-    background-color: #ffc107;
-    color: #333;
-    border-left: 5px solid #d39e00;
-}
-
-.toast-icon {
-    margin-right: 12px;
-    font-size: 20px;
-}
-
-.toast-message {
-    flex: 1;
-    font-size: 14px;
-}
-
-.toast-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    margin-left: 10px;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.toast-close:hover {
-    opacity: 0.8;
-}
-
-.progress-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background-color: rgba(255,255,255,0.7);
-    border-radius: 0 0 8px 8px;
-    animation: progress 3s linear forwards;
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @keyframes progress {
@@ -343,33 +410,167 @@ button:hover {
     }
 }
 
-/* Дополнительные анимации */
-@keyframes fadeIn {
+/* Адаптивность */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+    
+    .nav a {
+        margin: 0 10px;
+        font-size: 14px;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+    
+    .modal-body {
+        padding: 15px;
+        max-height: 70vh;
+    }
+    
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: calc(100% - 20px);
+        max-width: none;
+    }
+    
+    button {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    #tourInfoText {
+        font-size: 13px;
+    }
+    
+    #tourInfoBlock {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 16px;
+    }
+    
+    .modal-body {
+        padding: 12px;
+    }
+    
+    .nav {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .nav a {
+        margin: 0;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    input, select {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+/* Стили для прелоадера */
+#customPreloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+#customPreloader > div {
+    animation: fadeInScale 0.3s ease;
+}
+
+@keyframes fadeInScale {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: scale(0.9);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
     }
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Стили для спиннера прелоадера */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f0f9f0;
+    border-top: 4px solid #71b378;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-#tourInfoBlock {
-    animation: fadeIn 0.5s ease;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-#priceCalculation {
-    animation: slideUp 0.5s ease;
+/* Утилиты */
+.text-center {
+    text-align: center;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+.mt-2 {
+    margin-top: 10px;
+}
+
+.mt-3 {
+    margin-top: 15px;
+}
+
+.mb-2 {
+    margin-bottom: 10px;
+}
+
+.p-2 {
+    padding: 10px;
 }

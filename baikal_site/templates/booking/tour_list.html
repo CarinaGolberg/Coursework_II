@@ -1,25 +1,107 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Список туров на Байкал</title>
+{% extends 'base.html' %}
 {% load static %}
+
+{% block title %}Туры на Байкал{% endblock %}
+
+{% block content %}
+<div class="tours-container">
+    <h1>🏔️ Туры на Байкал</h1>
+    
+    <!-- Форма поиска и фильтрации -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input type="text" name="search" placeholder="🔍 Поиск тура..." value="{{ search_query }}">
+            </div>
+            
+            <div class="filter-group">
+                <input type="number" name="min_price" placeholder="Цена от" value="{{ min_price }}" step="1000">
+            </div>
+            
+            <div class="filter-group">
+                <input type="number" name="max_price" placeholder="Цена до" value="{{ max_price }}" step="1000">
+            </div>
+            
+            <div class="filter-group">
+                <select name="duration">
+                    <option value="">Любая длительность</option>
+                    {% for dur in durations %}
+                        <option value="{{ dur }}" {% if selected_duration == dur|stringformat:"s" %}selected{% endif %}>
+                            {{ dur }} дней
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-filter">Применить</button>
+            <a href="{% url 'tour_list' %}" class="btn-reset">Сбросить</a>
+        </form>
+    </div>
+    
+    <!-- Список туров -->
+    {% if tours %}
+        <div class="tours-grid">
+            {% for tour in tours %}
+                <div class="tour-card">
+                    {% if tour.image %}
+                        <img src="{{ tour.image.url }}" alt="{{ tour.title }}" class="tour-image">
+                    {% else %}
+                        <div class="tour-image-placeholder">🏔️</div>
+                    {% endif %}
+                    
+                    <div class="tour-info">
+                        <h3>{{ tour.title }}</h3>
+                        <p class="tour-description">{{ tour.description|truncatechars:100 }}</p>
+                        
+                        <div class="tour-details">
+                            <span class="tour-duration">⏱ {{ tour.duration }} дней</span>
+                            <span class="tour-price">💰 {{ tour.price }} руб.</span>
+                            <span class="tour-max">👥 {{ tour.max_people }} чел.</span>
+                        </div>
+                        
+                        <div class="tour-actions">
+                            <a href="{% url 'tour_detail' tour.id %}" class="btn-detail">Подробнее</a>
+                            <a href="{% url 'booking' %}?tour={{ tour.id }}" class="btn-book">Забронировать</a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'accounts:add_favorite' tour.id %}" class="btn-favorite" onclick="return confirm('Добавить в избранное?')">❤️</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Пагинация -->
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if tours.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">« Первая</a>
+                    <a href="?page={{ tours.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">‹ Предыдущая</a>
+                {% endif %}
+                
+                <span class="page-current">
+                    Страница {{ tours.number }} из {{ tours.paginator.num_pages }}
+                </span>
+                
+                {% if tours.has_next %}
+                    <a href="?page={{ tours.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">Следующая ›</a>
+                    <a href="?page={{ tours.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">Последняя »</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="no-tours">
+            <p>😕 По вашему запросу ничего не найдено</p>
+            <a href="{% url 'tour_list' %}" class="btn-reset">Сбросить фильтры</a>
+        </div>
+    {% endif %}
+</div>
+
 <style>
-
-body {
-    font-family: Arial, sans-serif;
-    background: #e8f5e9;
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
+.tours-container {
     max-width: 1200px;
-    margin: auto;
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.08);
+    margin: 0 auto;
+    padding: 20px;
 }
 
 h1 {
@@ -28,287 +110,220 @@ h1 {
     margin-bottom: 30px;
 }
 
-.nav {
+/* Фильтры */
+.filters-section {
+    background: #f0f9f0;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 10px 15px;
+    border: 2px solid #c8e6c9;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.btn-filter, .btn-reset {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-filter {
+    background: #71b378;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: #5a9e60;
+}
+
+.btn-reset {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-reset:hover {
+    background: #5a6268;
+}
+
+/* Сетка туров */
+.tours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.tour-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tour-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.tour-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.tour-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #71b378 0%, #2d5a2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    color: white;
+}
+
+.tour-info {
+    padding: 20px;
+}
+
+.tour-info h3 {
+    margin: 0 0 10px 0;
+    color: #2d5a2e;
+    font-size: 20px;
+}
+
+.tour-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.tour-details {
+    display: flex;
+    gap: 15px;
     margin-bottom: 20px;
-    padding: 10px;
-    background-color: #f1f8e9;
-    border-radius: 5px;
+    font-size: 13px;
+    color: #555;
+}
+
+.tour-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-detail, .btn-book, .btn-favorite {
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
     text-align: center;
 }
 
-.nav a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #71b378;
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-.nav a:hover {
-    color: #5a9e60;
-    text-decoration: underline;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th, td {
-    border: 1px solid #c8e6c9;
-    padding: 12px;
-    text-align: left;
-}
-
-th {
-    background-color: #71b378;
-    color: white;
-    font-weight: bold;
-    font-size: 15px;
-}
-
-tr:nth-child(even) {
-    background-color: #f1f8e9;
-}
-
-tr:nth-child(odd) {
-    background-color: #ffffff;
-}
-
-tr:hover {
-    background-color: #e8f5e9;
-    transition: background-color 0.3s ease;
-}
-
-.actions a {
-    margin-right: 8px;
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 13px;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-.actions a:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
 .btn-detail {
-    background-color: #17a2b8;
+    background: #17a2b8;
     color: white;
+    flex: 1;
 }
 
 .btn-detail:hover {
-    background-color: #138496;
+    background: #138496;
 }
 
-.btn-edit {
-    background-color: #ffc107;
-    color: black;
+.btn-book {
+    background: #71b378;
+    color: white;
+    flex: 1;
 }
 
-.btn-edit:hover {
-    background-color: #e0a800;
+.btn-book:hover {
+    background: #5a9e60;
 }
 
-.btn-delete {
-    background-color: #dc3545;
+.btn-favorite {
+    background: #ffc107;
+    color: #333;
+    padding: 8px 12px;
+}
+
+.btn-favorite:hover {
+    background: #e0a800;
+}
+
+/* Пагинация */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    padding: 8px 15px;
+    background: #f0f9f0;
+    color: #2d5a2e;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background: #71b378;
     color: white;
 }
 
-.btn-delete:hover {
-    background-color: #c82333;
+.page-current {
+    padding: 8px 15px;
+    background: #71b378;
+    color: white;
+    border-radius: 8px;
 }
 
 .no-tours {
     text-align: center;
     padding: 50px;
-    background: #f1f8e9;
-    border-radius: 8px;
-    margin-top: 20px;
-    border-left: 4px solid #dc3545;
+    background: #f0f9f0;
+    border-radius: 15px;
 }
 
-.no-tours p {
-    color: #666;
-    font-size: 18px;
-    margin: 10px 0;
-}
-
-.no-tours p:first-child {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-/* Статус доступности мест */
-.seats-status {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.seats-available {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.seats-limited {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.seats-full {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* Анимация для таблицы */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.container {
-    animation: fadeIn 0.5s ease;
-}
-
-/* Счетчик туров */
-.tour-count {
-    text-align: right;
-    color: #71b378;
-    font-size: 14px;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-/* Иконки в заголовках таблицы */
-th:first-child::before {
-    content: "🔢 ";
-}
-
-th:nth-child(2)::before {
-    content: "📋 ";
-}
-
-th:nth-child(3)::before {
-    content: "⏱️ ";
-}
-
-th:nth-child(4)::before {
-    content: "💰 ";
-}
-
-th:nth-child(5)::before {
-    content: "👥 ";
-}
-
-th:last-child::before {
-    content: "⚙️ ";
-}
-
-/* Стили для цены */
-.price {
-    font-weight: bold;
-    color: #71b378;
-}
-
-/* Медиа-запрос для мобильных устройств */
+/* Адаптивность */
 @media (max-width: 768px) {
-    .container {
-        padding: 15px;
+    .tours-grid {
+        grid-template-columns: 1fr;
     }
     
-    th, td {
-        padding: 8px;
-        font-size: 12px;
+    .filters-form {
+        flex-direction: column;
     }
     
-    .actions a {
-        margin-right: 4px;
-        padding: 3px 6px;
-        font-size: 11px;
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
     }
     
-    h1 {
-        font-size: 20px;
+    .tour-details {
+        flex-wrap: wrap;
     }
 }
-
 </style>
-</head>
-
-<body>
-
-<div class="nav">
-    <a href="{% url 'booking' %}">📅 Бронирование тура</a>
-    <a href="{% url 'tour_list' %}">📋 Список туров</a>
-</div>
-
-<div class="container">
-
-<h1>🏔️ Список доступных туров на Байкал</h1>
-
-{% if tours %}
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Название тура</th>
-            <th>Длительность</th>
-            <th>Цена (руб.)</th>
-            <th>Макс. участников</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for tour in tours %}
-        <tr>
-            <td>#{{ tour.id }}</td>
-            <td>
-                <strong>{{ tour.title }}</strong>
-                {% if tour.removed %}
-                    <span style="color: red; font-size: 12px;">(удален)</span>
-                {% endif %}
-            </td>
-            <td>{{ tour.duration }} дней</td>
-            <td class="price">{{ tour.price }} руб.</td>
-            <td>{{ tour.max_people }} чел.</td>
-            <td class="actions">
-                <a href="{% url 'tour_detail' tour.id %}" class="btn-detail" title="Подробнее о туре">🔍 Подробнее</a>
-                <a href="{% url 'tour_edit' tour.id %}" class="btn-edit" title="Редактировать тур">✏️ Изменить</a>
-                <a href="{% url 'tour_delete' tour.id %}" class="btn-delete" 
-                   onclick="return confirm('Вы уверены, что хотите удалить тур "{{ tour.title }}"?');"
-                   title="Удалить тур">🗑️ Удалить</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<div class="tour-count">
-    📊 Всего туров: {{ tours|length }}
-</div>
-{% else %}
-<div class="no-tours">
-    <p>😕 В данный момент нет доступных туров</p>
-    <p>Добавьте туры через административную панель</p>
-    <p style="font-size: 14px; margin-top: 20px;">
-        📌 Админ-панель: <a href="/admin/" style="color: #71b378;">/admin/</a>
-    </p>
-</div>
-{% endif %}
-
-</div>
-
-</body>
-</html>
+{% endblock %}

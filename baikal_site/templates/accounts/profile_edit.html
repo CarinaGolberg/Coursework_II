@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>✏️ Редактирование профиля</h1>
+        
+        <form method="post" enctype="multipart/form-data" class="auth-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="form-errors">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div class="error-message">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">👤 Имя пользователя</label>
+                {{ form.username }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">📧 Email</label>
+                {{ form.email }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">📞 Телефон</label>
+                {{ form.phone }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.bio.id_for_label }}">📝 О себе</label>
+                {{ form.bio }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.birth_date.id_for_label }}">🎂 Дата рождения</label>
+                {{ form.birth_date }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.avatar.id_for_label }}">🖼️ Аватар</label>
+                {{ form.avatar }}
+                {% if user.avatar %}
+                    <small class="form-text">Текущий аватар: <a href="{{ user.avatar.url }}" target="_blank">Посмотреть</a></small>
+                {% endif %}
+            </div>
+            
+            <div class="auth-actions">
+                <button type="submit" class="btn-submit">💾 Сохранить изменения</button>
+                <a href="{% url 'accounts:profile' %}" class="btn-cancel">❌ Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 150px);
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 550px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card h1 {
+    text-align: center;
+    color: #2d5a2e;
+    margin-bottom: 25px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 20px;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #2d5a2e;
+}
+
+.auth-form input,
+.auth-form textarea,
+.auth-form select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #c8e6c9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.auth-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.auth-form input:focus,
+.auth-form textarea:focus,
+.auth-form select:focus {
+    outline: none;
+    border-color: #71b378;
+    box-shadow: 0 0 0 3px rgba(113, 179, 120, 0.1);
+}
+
+.form-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    display: block;
+}
+
+.form-errors {
+    background: #fee;
+    border-left: 4px solid #dc3545;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: #71b378;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.btn-submit:hover {
+    background: #5a9e60;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(113, 179, 120, 0.3);
+}
+
+.btn-cancel {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.auth-actions {
+    margin-top: 25px;
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+    }
+}
+</style>
+{% endblock %}

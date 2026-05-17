@@ -13,13 +13,36 @@
 <div id="toastContainer" class="toast-container"></div>
 
 <div class="nav">
-    <a href="{% url 'booking' %}">Бронирование тура</a>
-    <a href="{% url 'tour_list' %}">Список туров</a>
+    <a href="{% url 'home' %}">🏔️ Главная</a>
+    <a href="{% url 'booking' %}">📅 Бронирование</a>
+    <a href="{% url 'tour_list' %}">📋 Туры</a>
 </div>
 
 <div class="container">
 
-<h1>Бронирование тура</h1>
+<h1>🏔️ Бронирование тура</h1>
+
+{% if booking_form.non_field_errors %}
+    <div class="form-global-errors">
+        {% for error in booking_form.non_field_errors %}
+            <div class="global-error-message">
+                ❌ {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for error in booking_form.non_field_errors %}
+                showToast(
+                    "{{ error|escapejs }}",
+                    "error",
+                    5000
+                );
+            {% endfor %}
+        });
+    </script>
+{% endif %}
 
 {% if messages %}
     <div style="display: none;" id="djangoMessages">
@@ -34,7 +57,7 @@
 {% csrf_token %}
 
 <div class="form-group">
-    <label>Выберите тур</label>
+    <label>🎯 Выберите тур</label>
     <div class="select-with-info">
         {{ booking_form.tour }}
     </div>
@@ -47,8 +70,22 @@
     {% endif %}
 </div>
 
+<!-- Блок для выбора даты из расписания (появляется после выбора тура) -->
+<div class="form-group" id="scheduleGroup" style="display: none;">
+    <label>📅 Выберите дату тура</label>
+    <div class="select-with-info">
+        <select name="schedule" id="id_schedule" class="form-control">
+            <option value="">Сначала выберите тур</option>
+        </select>
+    </div>
+    <div id="scheduleInfo" style="margin-top: 10px; font-size: 13px;"></div>
+    {% if booking_form.schedule.errors %}
+        <ul class="errorlist">{{ booking_form.schedule.errors }}</ul>
+    {% endif %}
+</div>
+
 <div class="form-group">
-    <label>Ваше имя</label>
+    <label>👤 Ваше имя</label>
     {{ booking_form.name }}
     {% if booking_form.name.errors %}
         <ul class="errorlist">{{ booking_form.name.errors }}</ul>
@@ -56,7 +93,7 @@
 </div>
 
 <div class="form-group">
-    <label>Email</label>
+    <label>📧 Email</label>
     {{ booking_form.email }}
     {% if booking_form.email.errors %}
         <ul class="errorlist">{{ booking_form.email.errors }}</ul>
@@ -64,15 +101,7 @@
 </div>
 
 <div class="form-group">
-    <label>Дата тура</label>
-    {{ booking_form.tour_date }}
-    {% if booking_form.tour_date.errors %}
-        <ul class="errorlist">{{ booking_form.tour_date.errors }}</ul>
-    {% endif %}
-</div>
-
-<div class="form-group">
-    <label>Количество человек</label>
+    <label>👥 Количество человек</label>
     {{ booking_form.people }}
     <div id="peopleError" style="color: red; font-size: 14px; margin-top: 5px;"></div>
     <div id="priceCalculation" style="display: none;"></div>
@@ -82,24 +111,24 @@
 </div>
 
 <div class="form-group">
-    <label>Загрузите согласие (PDF, PNG, JPG)</label>
+    <label>📎 Загрузите согласие (PDF, PNG, JPG)</label>
     {{ consent_form.document }}
     {% if consent_form.document.errors %}
         <ul class="errorlist">{{ consent_form.document.errors }}</ul>
     {% endif %}
 </div>
 
-<button type="submit">Забронировать</button>
+<button type="submit">✅ Забронировать</button>
 
 </form>
 
 </div>
 
-<!-- Модальное окно для информации о туре (детальная информация) -->
+<!-- Модальное окно для детальной информации о туре -->
 <div id="tourModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modalTitle">Информация о туре</h3>
+            <h3 id="modalTitle">📋 Информация о туре</h3>
             <span class="close">&times;</span>
         </div>
         <div class="modal-body" id="modalBody">
@@ -115,7 +144,7 @@
 <div id="errorModal" class="modal error-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Ошибка</h3>
+            <h3>❌ Ошибка</h3>
             <span class="close">&times;</span>
         </div>
         <div class="modal-body" id="errorModalBody">
@@ -130,7 +159,7 @@
 <!-- Передаем данные из Django в JavaScript -->
 <script>
     window.toursData = {
-        {% for tour in booking_form.fields.tour.queryset %}
+        {% for tour in tours %}
         {{ tour.id }}: {
             id: {{ tour.id }},
             title: "{{ tour.title|escapejs }}",
