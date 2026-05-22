@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Управление бронированиями{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Управление бронированиями</h1>
+    
+    <div class="table-wrapper">
+        <table class="bookings-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Код</th>
+                    <th>Тур</th>
+                    <th>Дата тура</th>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Человек</th>
+                    <th>Статус</th>
+                    <th>Дата брони</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td><code>{{ booking.booking_reference }}</code></td>
+                    <td>{{ booking.tour.title }}</td>
+                    <td>{{ booking.schedule.start_date|date:"d.m.Y" }}</td>
+                    <td>{{ booking.name }}</td>
+                    <td>{{ booking.email }}</td>
+                    <td>{{ booking.people }}</td>
+                    <td>
+                        <span class="status status-{{ booking.status }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ booking.created_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty-state">Нет бронирований</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if bookings.has_other_pages %}
+    <div class="pagination">
+        {% if bookings.has_previous %}
+            <a href="?page=1">Первая</a>
+            <a href="?page={{ bookings.previous_page_number }}">← Предыдущая</a>
+        {% endif %}
+        
+        <span class="current">
+            Страница {{ bookings.number }} из {{ bookings.paginator.num_pages }}
+        </span>
+        
+        {% if bookings.has_next %}
+            <a href="?page={{ bookings.next_page_number }}">Следующая →</a>
+            <a href="?page={{ bookings.paginator.num_pages }}">Последняя</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="actions">
+        <a href="{% url 'home' %}" class="btn-back">Назад</a>
+    </div>
+</div>
+
+<style>
+.admin-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2d3e2d;
+    margin-bottom: 24px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.bookings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.bookings-table th {
+    background: #e8ecef;
+    color: #2d3e2d;
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.bookings-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e8ecef;
+    color: #4a5b4e;
+}
+
+.bookings-table tr:hover td {
+    background: #f8f9f8;
+}
+
+code {
+    background: #e8ecef;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background: #fff8e7;
+    color: #f57c00;
+}
+
+.status-confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-cancelled {
+    background: #ffebee;
+    color: #dc3545;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.pagination a, .pagination .current {
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.pagination a {
+    background: #e8ecef;
+    color: #4a5b4e;
+    transition: all 0.2s;
+}
+
+.pagination a:hover {
+    background: #2e7d32;
+    color: white;
+}
+
+.pagination .current {
+    background: #2e7d32;
+    color: white;
+}
+
+.actions {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 10px 24px;
+    background: #e8ecef;
+    color: #4a5b4e;
+    text-decoration: none;
+    border-radius: 40px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #d0d7dc;
+}
+
+@media (max-width: 768px) {
+    .bookings-table th,
+    .bookings-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+}
+</style>
+{% endblock %}
