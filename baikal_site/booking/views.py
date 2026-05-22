@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.admin.views.decorators import staff_member_required
 from .models import Tour, Booking, ConsentDocument, TourSchedule
 from .forms import BookingForm, ConsentForm, TourForm
 
@@ -157,6 +158,21 @@ def tour_restore_view(request, pk):
     tour.save()
     
     return redirect('tour_list')
+
+
+@staff_member_required
+def manage_bookings_view(request):
+    """Страница управления бронированиями (только для администраторов)"""
+    bookings = Booking.objects.select_related('tour', 'schedule').all().order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(bookings, 20)
+    page_number = request.GET.get('page')
+    bookings_page = paginator.get_page(page_number)
+    
+    return render(request, 'booking/manage_bookings.html', {
+        'bookings': bookings_page,
+    })
 
 
 # AJAX VIEWS

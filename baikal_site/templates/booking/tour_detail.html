@@ -103,6 +103,7 @@ h3 {
     transform: scale(1.02);
 }
 
+/* Блок информации о бронированиях - только для админов */
 .booking-info {
     background-color: #f0f9f0;
     padding: 20px;
@@ -164,15 +165,25 @@ tr:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.btn-edit {
+.btn-book {
     background-color: #71b378;
     color: white;
 }
 
-.btn-edit:hover {
+.btn-book:hover {
     background-color: #5a9e60;
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
 }
 
 .docs-list {
@@ -237,14 +248,44 @@ tr:hover {
     border-radius: 5px;
 }
 
+.book-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 30px;
+    background-color: #71b378;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.book-link:hover {
+    background-color: #5a9e60;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(113, 179, 120, 0.3);
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="nav">
-    <a href="{% url 'booking' %}">Бронирование тура</a>
-    <a href="{% url 'tour_list' %}">Список туров</a>
+    <a href="{% url 'home' %}">🏔️ Главная</a>
+    <a href="{% url 'booking' %}">📅 Бронирование</a>
+    <a href="{% url 'tour_list' %}">📋 Список туров</a>
+    
+    {% if user.is_authenticated %}
+        <a href="{% url 'accounts:profile' %}">👤 {{ user.username }}</a>
+        {% if user.is_superuser or user.is_staff %}
+            <a href="{% url 'manage_bookings' %}">📋 Все бронирования</a>
+        {% endif %}
+        <a href="{% url 'accounts:logout' %}">🚪 Выход</a>
+    {% else %}
+        <a href="{% url 'accounts:login' %}">🔑 Вход</a>
+        <a href="{% url 'accounts:register' %}">📝 Регистрация</a>
+    {% endif %}
 </div>
 
 <div class="container">
@@ -286,91 +327,103 @@ tr:hover {
     {% endif %}
 </div>
 
-<div class="booking-info">
-    <h2>Информация о бронированиях</h2>
-    
-    <div class="info-row">
-        <span class="info-label">Всего забронировано мест:</span>
-        <span class="info-value"><strong>{{ total_booked }}</strong> из {{ tour.max_people }}</span>
-    </div>
-    
-    <div class="info-row">
-        <span class="info-label">Свободных мест:</span>
-        <span class="info-value">
-            <strong class="
-                {% if tour.max_people|add:"-"|add:total_booked <= 0 %}seats-full
-                {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}seats-limited
-                {% else %}seats-available{% endif %}">
-                {% with free_seats=tour.max_people|add:"-"|add:total_booked %}
-                    {% if free_seats <= 0 %}
-                        0 (нет свободных мест)
-                    {% else %}
-                        {{ free_seats }}
-                    {% endif %}
-                {% endwith %}
-            </strong>
-        </span>
-    </div>
-    
-    {% if tour.max_people|add:"-"|add:total_booked <= 0 %}
-    <div class="warning-text">
-        ⚠️ Внимание: На данный тур нет свободных мест! Бронирование недоступно.
-    </div>
-    {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}
-    <div class="warning-text">
-        🎯 Осталось всего {{ tour.max_people|add:"-"|add:total_booked }} мест! Торопитесь!
-    </div>
-    {% else %}
-    <div class="info-text">
-        ✅ Есть свободные места. Вы можете забронировать тур!
-    </div>
-    {% endif %}
-    
-    {% if bookings %}
-    <h3>Список бронирований:</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Имя</th>
-                <th>Email</th>
-                <th>Дата тура</th>
-                <th>Количество человек</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for booking in bookings %}
-            <tr>
-                <td>{{ booking.name }}</td>
-                <td>{{ booking.email }}</td>
-                <td>{{ booking.tour_date }}</td>
-                <td>{{ booking.people }}</td>
-            </tr>
+{% if user.is_superuser or user.is_staff %}
+    {# Блок для администраторов - полная информация о бронированиях #}
+    <div class="booking-info">
+        <h2>Информация о бронированиях</h2>
+        
+        <div class="info-row">
+            <span class="info-label">Всего забронировано мест:</span>
+            <span class="info-value"><strong>{{ total_booked }}</strong> из {{ tour.max_people }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Свободных мест:</span>
+            <span class="info-value">
+                <strong class="
+                    {% if tour.max_people|add:"-"|add:total_booked <= 0 %}seats-full
+                    {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}seats-limited
+                    {% else %}seats-available{% endif %}">
+                    {% with free_seats=tour.max_people|add:"-"|add:total_booked %}
+                        {% if free_seats <= 0 %}
+                            0 (нет свободных мест)
+                        {% else %}
+                            {{ free_seats }}
+                        {% endif %}
+                    {% endwith %}
+                </strong>
+            </span>
+        </div>
+        
+        {% if tour.max_people|add:"-"|add:total_booked <= 0 %}
+        <div class="warning-text">
+            ⚠️ Внимание: На данный тур нет свободных мест! Бронирование недоступно.
+        </div>
+        {% elif tour.max_people|add:"-"|add:total_booked <= 3 %}
+        <div class="warning-text">
+            🎯 Осталось всего {{ tour.max_people|add:"-"|add:total_booked }} мест! Торопитесь!
+        </div>
+        {% else %}
+        <div class="info-text">
+            ✅ Есть свободные места.
+        </div>
+        {% endif %}
+        
+        {% if bookings %}
+        <h3>Список бронирований:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Дата тура</th>
+                    <th>Количество человек</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.name }}</td>
+                    <td>{{ booking.email }}</td>
+                    <td>{{ booking.tour_date }}</td>
+                    <td>{{ booking.people }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="info-text">
+            📌 На этот тур пока нет бронирований. Будьте первым!
+        </div>
+        {% endif %}
+        
+        {% if consent_docs %}
+        <h3>Документы согласия:</h3>
+        <ul class="docs-list">
+            {% for doc in consent_docs %}
+            <li>
+                📄 <a href="{{ doc.document.url }}" target="_blank">
+                    Согласие на обработку данных - {{ doc.booking.name }}
+                </a>
+            </li>
             {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="info-text">
-        📌 На этот тур пока нет бронирований. Будьте первым!
+        </ul>
+        {% endif %}
     </div>
-    {% endif %}
-    
-    {% if consent_docs %}
-    <h3>Документы согласия:</h3>
-    <ul class="docs-list">
-        {% for doc in consent_docs %}
-        <li>
-            📄 <a href="{{ doc.document.url }}" target="_blank">
-                Согласие на обработку данных - {{ doc.booking.name }}
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-</div>
+{% else %}
+    {# Для обычных пользователей - кнопка бронирования #}
+    <div class="info-text" style="text-align: center; margin: 30px 0;">
+        <p>🏔️ Хотите отправиться в это путешествие?</p>
+        <a href="{% url 'booking' %}?tour={{ tour.id }}" class="book-link">Забронировать тур →</a>
+    </div>
+{% endif %}
 
 <div class="actions">
     <a href="{% url 'tour_list' %}" class="btn btn-back">← Назад к списку туров</a>
-    <a href="{% url 'tour_edit' tour.id %}" class="btn btn-edit">✏️ Редактировать тур</a>
+    
+    {% if user.is_superuser or user.is_staff %}
+        <a href="{% url 'tour_edit' tour.id %}" class="btn btn-edit">✏️ Редактировать тур</a>
+    {% endif %}
 </div>
 
 </div>

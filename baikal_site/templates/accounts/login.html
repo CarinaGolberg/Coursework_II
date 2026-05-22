@@ -8,7 +8,14 @@
     <div class="auth-card">
         <h1>🔐 Вход в систему</h1>
         
-        <form method="post" class="auth-form">
+        <!-- Вкладки для выбора типа входа -->
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('user')">👤 Пользователь</button>
+            <button class="tab-btn" onclick="switchTab('admin')">👑 Администратор</button>
+        </div>
+        
+        <!-- Форма входа для обычного пользователя -->
+        <form method="post" class="auth-form" id="userForm">
             {% csrf_token %}
             
             {% if form.errors %}
@@ -27,12 +34,29 @@
                 {{ form.password }}
             </div>
             
-            <button type="submit" class="btn-submit">Войти</button>
+            <button type="submit" class="btn-submit">Войти как пользователь</button>
+        </form>
+        
+        <!-- Форма входа для администратора -->
+        <form method="post" class="auth-form" id="adminForm" style="display: none;">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="admin_username">👑 Имя пользователя (админ)</label>
+                <input type="text" name="username" id="admin_username" placeholder="admin" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_password">🔒 Пароль</label>
+                <input type="password" name="password" id="admin_password" class="form-control">
+            </div>
+            
+            <button type="submit" class="btn-submit admin-btn">Войти как администратор</button>
         </form>
         
         <div class="auth-links">
             <p>Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a></p>
-            <a href="{% url 'booking' %}">← На главную</a>
+            <a href="{% url 'home' %}">← На главную</a>
         </div>
     </div>
 </div>
@@ -59,6 +83,36 @@
     text-align: center;
     color: #2d5a2e;
     margin-bottom: 25px;
+}
+
+/* Стили для вкладок */
+.auth-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #c8e6c9;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s ease;
+    margin: 0;
+}
+
+.tab-btn:hover {
+    color: #71b378;
+}
+
+.tab-btn.active {
+    color: #71b378;
+    border-bottom: 2px solid #71b378;
+    margin-bottom: -2px;
 }
 
 .auth-form .form-group {
@@ -119,6 +173,14 @@
     box-shadow: 0 5px 15px rgba(113, 179, 120, 0.3);
 }
 
+.admin-btn {
+    background: #dc3545;
+}
+
+.admin-btn:hover {
+    background: #c82333;
+}
+
 .auth-links {
     text-align: center;
     margin-top: 20px;
@@ -145,4 +207,24 @@
     }
 }
 </style>
+
+<script>
+function switchTab(type) {
+    const userForm = document.getElementById('userForm');
+    const adminForm = document.getElementById('adminForm');
+    const tabs = document.querySelectorAll('.tab-btn');
+    
+    if (type === 'user') {
+        userForm.style.display = 'block';
+        adminForm.style.display = 'none';
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+    } else {
+        userForm.style.display = 'none';
+        adminForm.style.display = 'block';
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
+    }
+}
+</script>
 {% endblock %}

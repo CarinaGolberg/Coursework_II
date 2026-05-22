@@ -59,10 +59,11 @@ def verify_email_view(request, token):
     messages.success(request, 'Email успешно подтвержден! Теперь вы можете войти.')
     return redirect('accounts:login')
 
+
 def login_view(request):
     """Вход в систему"""
     if request.user.is_authenticated:
-        return redirect('accounts:profile')
+        return redirect('accounts:profile')  # Всех отправляем в профиль
     
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -73,7 +74,6 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 
-                # Логируем активность
                 UserActivityLog.objects.create(
                     user=user,
                     action='login',
@@ -82,8 +82,7 @@ def login_view(request):
                 )
                 
                 messages.success(request, f'Добро пожаловать, {user.username}!')
-                next_url = request.GET.get('next', 'accounts:profile')
-                return redirect(next_url)
+                return redirect('accounts:profile')
     else:
         form = CustomAuthenticationForm()
     

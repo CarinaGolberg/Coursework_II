@@ -31,4 +31,7 @@ urlpatterns = [
     path('ajax/tour-details/', views.get_tour_details_ajax, name='ajax_tour_details'),
     path('ajax/schedule-availability/', views.get_schedule_availability_ajax, name='ajax_schedule_availability'),
     path('ajax/calculate-price/', views.calculate_price_ajax, name='ajax_calculate_price'),
+
+    # Управление бронированиями (только для админов)
+    path('manage/bookings/', views.manage_bookings_view, name='manage_bookings'),
 ]

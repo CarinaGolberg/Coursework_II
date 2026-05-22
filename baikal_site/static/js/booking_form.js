@@ -206,7 +206,6 @@ async function updateAvailabilityInRealTime(scheduleId, peopleCount) {
                                     <strong>✅ Доступно мест:</strong> ${schedule.available_seats} из ${schedule.max_people}<br>
                                     <strong>📊 Уже забронировано:</strong> ${schedule.total_booked}<br>
                                     <span style="color: #28a745;">✓ Можно забронировать ${peopleCount} чел.</span>
-                                    <br><small>🔄 Обновляется автоматически</small>
                                 </div>
                             `;
                             updateSubmitButton(true, peopleCount);
@@ -542,7 +541,6 @@ async function checkAvailability(scheduleId, peopleCount) {
                         <div style="background: #d4edda; padding: 12px; border-radius: 8px; color: #155724; border-left: 4px solid #28a745;">
                             ✅ Доступно: ${schedule.available_seats} из ${schedule.max_people} мест<br>
                             ✅ Можно забронировать ${peopleCount} чел.<br>
-                            <small>🔄 Обновляется автоматически каждые 30 сек.</small>
                         </div>
                     `;
                 }
@@ -553,7 +551,6 @@ async function checkAvailability(scheduleId, peopleCount) {
                     scheduleInfo.innerHTML = `
                         <div style="background: #f8d7da; padding: 12px; border-radius: 8px; color: #721c24; border-left: 4px solid #dc3545;">
                             ❌ Недостаточно мест! Доступно: ${schedule.available_seats} из ${schedule.max_people}<br>
-                            <small>🔄 Обновляется автоматически каждые 30 сек.</small>
                         </div>
                     `;
                 }
