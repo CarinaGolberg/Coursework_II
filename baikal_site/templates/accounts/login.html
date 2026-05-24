@@ -4,227 +4,412 @@
 {% block title %}Вход в систему{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <h1>🔐 Вход в систему</h1>
-        
+{% include 'includes/icons.html' %}
+
+<div class="login-container">
+    <div class="login-header">
+        <h1>Добро пожаловать</h1>
+        <p class="login-subtitle">Войдите в свой аккаунт</p>
+    </div>
+
+    <div class="login-card">
         <!-- Вкладки для выбора типа входа -->
-        <div class="auth-tabs">
-            <button class="tab-btn active" onclick="switchTab('user')">👤 Пользователь</button>
-            <button class="tab-btn" onclick="switchTab('admin')">👑 Администратор</button>
+        <div class="login-tabs">
+            <button class="tab-btn active" data-tab="user">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Пользователь
+            </button>
+            <button class="tab-btn" data-tab="admin">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Администратор
+            </button>
         </div>
         
         <!-- Форма входа для обычного пользователя -->
-        <form method="post" class="auth-form" id="userForm">
+        <form method="post" class="login-form" id="userForm">
             {% csrf_token %}
             
-            {% if form.errors %}
+            {% if form.errors and not request.POST.username|default:''|slice:":4" == 'admin' %}
                 <div class="form-errors">
-                    <div class="error-message">Неверное имя пользователя или пароль</div>
+                    <div class="error-message">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Неверное имя пользователя или пароль
+                    </div>
                 </div>
             {% endif %}
             
             <div class="form-group">
-                <label for="{{ form.username.id_for_label }}">👤 Имя пользователя</label>
+                <label for="{{ form.username.id_for_label }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Имя пользователя
+                </label>
                 {{ form.username }}
             </div>
             
             <div class="form-group">
-                <label for="{{ form.password.id_for_label }}">🔒 Пароль</label>
+                <label for="{{ form.password.id_for_label }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Пароль
+                </label>
                 {{ form.password }}
             </div>
             
-            <button type="submit" class="btn-submit">Войти как пользователь</button>
+            <button type="submit" class="btn-submit">Войти</button>
         </form>
         
         <!-- Форма входа для администратора -->
-        <form method="post" class="auth-form" id="adminForm" style="display: none;">
+        <form method="post" class="login-form" id="adminForm" style="display: none;">
             {% csrf_token %}
             
+            {% if form.errors and request.POST.username|default:''|slice:":4" == 'admin' %}
+                <div class="form-errors">
+                    <div class="error-message">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Неверное имя пользователя или пароль
+                    </div>
+                </div>
+            {% endif %}
+            
             <div class="form-group">
-                <label for="admin_username">👑 Имя пользователя (админ)</label>
-                <input type="text" name="username" id="admin_username" placeholder="admin" class="form-control">
+                <label for="admin_username">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    Имя пользователя
+                </label>
+                <input type="text" name="username" id="admin_username" class="form-control" placeholder="admin">
             </div>
             
             <div class="form-group">
-                <label for="admin_password">🔒 Пароль</label>
+                <label for="admin_password">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Пароль
+                </label>
                 <input type="password" name="password" id="admin_password" class="form-control">
             </div>
             
             <button type="submit" class="btn-submit admin-btn">Войти как администратор</button>
         </form>
         
-        <div class="auth-links">
+        <div class="login-links">
             <p>Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a></p>
-            <a href="{% url 'home' %}">← На главную</a>
+            <a href="{% url 'home' %}" class="back-link">← На главную</a>
         </div>
     </div>
 </div>
 
 <style>
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 150px);
-    padding: 20px;
+.login-container {
+    max-width: 550px;
+    margin: 0 auto;
+    padding: 120px 5% 60px 5%;
+    min-height: 100vh;
 }
 
-.auth-card {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.auth-card h1 {
+.login-header {
     text-align: center;
-    color: #2d5a2e;
-    margin-bottom: 25px;
+    margin-bottom: 40px;
 }
 
-/* Стили для вкладок */
-.auth-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #c8e6c9;
+.login-header h1 {
+    font-size: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.login-header h1:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #00E5FF;
+    margin: 16px auto 0;
+}
+
+.login-subtitle {
+    color: #A0B3C9;
+    font-size: 1rem;
+    margin-top: 16px;
+}
+
+.login-card {
+    background: rgba(30, 32, 34, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Вкладки */
+.login-tabs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 4px;
+
+    margin-bottom: 32px;
+
+    background: transparent;
+    border-radius: 50px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    box-sizing: border-box;
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 44px;
+    padding: 0 18px;
+
     background: none;
     border: none;
-    font-size: 16px;
+    border-radius: 45px;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    color: #A0B3C9;
     cursor: pointer;
-    color: #666;
     transition: all 0.3s ease;
-    margin: 0;
+    white-space: nowrap;
+
+    box-sizing: border-box;
 }
 
-.tab-btn:hover {
-    color: #71b378;
+.tab-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #A0B3C9;
 }
 
 .tab-btn.active {
-    color: #71b378;
-    border-bottom: 2px solid #71b378;
-    margin-bottom: -2px;
+    background: #00E5FF;
+    color: #0A1A2F;
 }
 
-.auth-form .form-group {
-    margin-bottom: 20px;
+.tab-btn.active svg {
+    stroke: #0A1A2F;
 }
 
-.auth-form label {
-    display: block;
+.tab-btn:hover:not(.active) {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00E5FF;
+}
+
+.tab-btn:hover:not(.active) svg {
+    stroke: #00E5FF;
+}
+
+/* Форма */
+.login-form .form-group {
+    margin-bottom: 24px;
+}
+
+.login-form label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #A0B3C9;
     margin-bottom: 8px;
-    font-weight: bold;
-    color: #2d5a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.auth-form input {
+.login-form label svg {
+    stroke: #00E5FF;
+}
+
+.login-form input {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #c8e6c9;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 12px 16px;
+    background: rgba(20, 22, 24, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: 'Manrope', sans-serif;
+    color: #E8EDF2;
     transition: all 0.3s ease;
 }
 
-.auth-form input:focus {
+.login-form input:focus {
     outline: none;
-    border-color: #71b378;
-    box-shadow: 0 0 0 3px rgba(113, 179, 120, 0.1);
+    border-color: #00E5FF;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
 }
 
+/* Ошибки */
 .form-errors {
-    background: #fee;
-    border-left: 4px solid #dc3545;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 5px;
+    background: rgba(220, 53, 69, 0.1);
+    border-left: 3px solid #dc3545;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    border-radius: 12px;
 }
 
 .error-message {
-    color: #dc3545;
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ef9a9a;
+    font-size: 0.8rem;
 }
 
+.error-message svg {
+    stroke: #ef9a9a;
+}
+
+/* Кнопки */
 .btn-submit {
     width: 100%;
     padding: 14px;
-    background: #71b378;
-    color: white;
+    background: #00E5FF;
+    color: #0A1A2F;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 8px;
 }
 
 .btn-submit:hover {
-    background: #5a9e60;
+    background: #00c4d8;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(113, 179, 120, 0.3);
+    box-shadow: 0 5px 20px rgba(0, 229, 255, 0.3);
 }
 
 .admin-btn {
     background: #dc3545;
+    color: white;
 }
 
 .admin-btn:hover {
     background: #c82333;
+    box-shadow: 0 5px 20px rgba(220, 53, 69, 0.3);
 }
 
-.auth-links {
+/* Ссылки */
+.login-links {
     text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #c8e6c9;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.auth-links a {
-    color: #71b378;
+.login-links p {
+    color: #A0B3C9;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.login-links a {
+    color: #00E5FF;
     text-decoration: none;
+    transition: color 0.3s ease;
 }
 
-.auth-links a:hover {
+.login-links a:hover {
+    color: #00c4d8;
     text-decoration: underline;
 }
 
+.back-link {
+    display: inline-block;
+    font-size: 0.8rem;
+}
+
 @media (max-width: 480px) {
-    .auth-card {
+    .login-container {
+        padding: 100px 4% 40px;
+    }
+    
+    .login-card {
         padding: 20px;
     }
     
-    .auth-card h1 {
-        font-size: 24px;
+    .tab-btn {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+        gap: 4px;
+    }
+    
+    .tab-btn svg {
+        width: 14px;
+        height: 14px;
     }
 }
 </style>
 
 <script>
-function switchTab(type) {
+document.addEventListener('DOMContentLoaded', function() {
     const userForm = document.getElementById('userForm');
     const adminForm = document.getElementById('adminForm');
     const tabs = document.querySelectorAll('.tab-btn');
     
-    if (type === 'user') {
-        userForm.style.display = 'block';
-        adminForm.style.display = 'none';
-        tabs[0].classList.add('active');
-        tabs[1].classList.remove('active');
-    } else {
-        userForm.style.display = 'none';
-        adminForm.style.display = 'block';
-        tabs[0].classList.remove('active');
-        tabs[1].classList.add('active');
+    function switchTab(tabType) {
+        if (tabType === 'user') {
+            userForm.style.display = 'block';
+            adminForm.style.display = 'none';
+            tabs[0].classList.add('active');
+            tabs[1].classList.remove('active');
+        } else {
+            userForm.style.display = 'none';
+            adminForm.style.display = 'block';
+            tabs[0].classList.remove('active');
+            tabs[1].classList.add('active');
+        }
     }
-}
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabType = this.dataset.tab;
+            switchTab(tabType);
+        });
+    });
+    
+    // Проверяем, была ли попытка входа как админ
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === '1') {
+        switchTab('admin');
+    }
+});
 </script>
 {% endblock %}

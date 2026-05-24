@@ -1,0 +1,698 @@
+/* luxury.css - Премиальная тема Байкал */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+
+/* CSS Variables */
+:root {
+    --baikal-deep: #0A1A2F;
+    --baikal-mid: #0F2847;
+    --ice-cyan: #00E5FF;
+    --ice-cyan-dim: rgba(0, 229, 255, 0.15);
+    --graphite: #1E2022;
+    --graphite-light: #2C3035;
+    --glass-white: rgba(255, 255, 255, 0.08);
+    --glass-white-hover: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #E8EDF2;
+    --text-secondary: #A0B3C9;
+    --transition-smooth: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-fast: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body,
+main {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: var(--baikal-deep);
+    overflow-x: hidden;
+}
+
+body {
+    background: var(--baikal-deep);
+    color: var(--text-primary);
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* ============ TYPOGRAPHY ============ */
+h1, h2, h3, .hero-title, .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: 3rem;
+    color: var(--ice-cyan);
+}
+
+h2 {
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    display: inline-block;
+}
+
+h2:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--ice-cyan);
+}
+
+/* ============ NAVIGATION ============ */
+.glass-nav {
+    position: fixed;
+
+    top: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 90%;
+    max-width: 1400px;
+
+    padding: 14px 30px;
+
+    background: rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 999px;
+
+    z-index: 1000;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.18);
+
+    transition:
+        background .4s ease,
+        transform .4s ease,
+        box-shadow .4s ease,
+        top .4s ease,
+        opacity .4s ease;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.logo span {
+    color: var(--ice-cyan);
+}
+
+.nav-links {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    letter-spacing: 0.3px;
+}
+
+.nav-links a:hover {
+    color: var(--ice-cyan);
+}
+
+.nav-links .admin-link {
+    background: var(--ice-cyan-dim);
+    padding: 6px 14px;
+    border-radius: 30px;
+    border: 1px solid var(--glass-border);
+}
+
+.nav-links .logout-link {
+    color: #ff6b6b;
+}
+
+.nav-links .logout-link:hover {
+    color: #ff4444;
+}
+
+/* ============ HERO SECTION ============ */
+.hero {
+    height: 100vh;
+    min-height: 700px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        rgba(10, 26, 47, 0.85) 0%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-title {
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    animation: fadeInUp 1s ease;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    animation: fadeInUp 1s ease 0.2s both;
+}
+
+.hero-cta {
+    display: inline-block;
+    padding: 14px 40px;
+    background: transparent;
+    border: 2px solid var(--ice-cyan);
+    color: var(--ice-cyan);
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    animation: fadeInUp 1s ease 0.4s both;
+}
+
+.hero-cta:hover {
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px -10px rgba(0, 229, 255, 0.3);
+}
+
+.hero-scroll {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    z-index: 2;
+    animation: bounce 2s infinite;
+}
+
+/* ============ TOURS GRID ============ */
+.tours-section {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 100px 5%;
+    background: var(--baikal-deep);
+}
+
+.tours-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 5%;
+    background: transparent;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+}
+
+.section-header h2:after {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+}
+
+.tours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+}
+
+.tour-card {
+    background: var(--graphite);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.tour-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+.tour-card-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.tour-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-smooth);
+}
+
+.tour-card:hover .tour-card-image img {
+    transform: scale(1.08);
+}
+
+.tour-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        0deg,
+        rgba(0,0,0,0.7) 0%,
+        rgba(0,0,0,0.1) 100%
+    );
+}
+
+.tour-card-price {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    z-index: 2;
+}
+
+.tour-card-content {
+    padding: 24px;
+}
+
+.tour-card-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: white;
+}
+
+.tour-card-content p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.tour-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.btn-outline {
+    display: inline-block;
+    padding: 10px 24px;
+    background: transparent;
+    border: 1px solid var(--ice-cyan);
+    color: var(--ice-cyan);
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: var(--transition-fast);
+    text-align: center;
+}
+
+.btn-outline:hover {
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+}
+
+/* ============ PAGINATION ============ */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 50px;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination .current {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: var(--transition-fast);
+}
+
+.pagination a {
+    background: var(--graphite);
+    color: var(--text-primary);
+}
+
+.pagination a:hover {
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+}
+
+.pagination .current {
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+    font-weight: 600;
+}
+
+/* ============ FILTERS ============ */
+.filters-section {
+    background: var(--graphite-light);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 40px;
+}
+
+.filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 12px;
+    background: var(--graphite);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: 'Manrope', sans-serif;
+    transition: var(--transition-fast);
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--ice-cyan);
+}
+
+/* Контейнер для кнопок - теперь выравнивается по нижнему краю как и поля ввода */
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 0;
+}
+
+/* Общие стили для кнопок - теперь они идеально на одной линии */
+.btn-filter,
+.btn-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 20px;
+
+    border-radius: 30px;
+    border: none;
+
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    box-sizing: border-box;
+
+    height: 44px;  /* Фиксированная высота, равна высоте полей ввода (padding 12 * 2 + текст) */
+    width: auto;
+
+    white-space: nowrap;
+    
+    /* Убираем все браузерные артефакты */
+    margin: 0;
+    vertical-align: middle;
+}
+
+.btn-filter {
+    background: var(--ice-cyan);
+    color: var(--baikal-deep);
+}
+
+.btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 229, 255, 0.3);
+}
+
+.btn-reset {
+    background: var(--graphite);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.btn-reset:hover {
+    background: var(--ice-cyan-dim);
+    color: var(--ice-cyan);
+}
+
+/* ============ КНОПКА "НАВЕРХ" ============ */
+.scroll-top-btn {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    line-height: 1;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,0.1);
+
+    color: white;
+
+    font-size: 20px;
+    cursor: pointer;
+
+    z-index: 999;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateY(20px);
+
+    transition: all .35s ease;
+}
+
+.scroll-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+    background: rgba(0,229,255,0.18);
+    color: var(--ice-cyan);
+
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 10px 30px rgba(0,229,255,.18);
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(10px);
+    }
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s ease;
+}
+
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .tours-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .glass-nav {
+        width: 94%;
+        padding: 12px 20px;
+    }
+
+    .nav-container {
+        flex-direction: column;
+    }
+
+    .nav-links {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.6rem;
+    }
+
+    .filters-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-actions {
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
+    
+    .btn-filter,
+    .btn-reset {
+        height: 42px;
+        padding: 8px 18px;
+    }
+
+    .scroll-top-btn {
+        right: 18px;
+        bottom: 18px;
+    }
+}
+
+.icon {
+    width: 14px;
+    height: 14px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+    fill: none;
+}

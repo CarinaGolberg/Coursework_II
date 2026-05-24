@@ -6,11 +6,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db import models
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import Tour, Booking, ConsentDocument, TourSchedule
 from .forms import BookingForm, ConsentForm, TourForm
+from accounts.models import User
 
 
 def booking_view(request):
@@ -19,27 +21,41 @@ def booking_view(request):
     if request.method == "POST":
 
         booking_form = BookingForm(request.POST)
-        consent_form = ConsentForm(request.POST, request.FILES)
+        
+        # Проверяем, есть ли файл в запросе
+        if request.FILES.get('document'):
+            consent_form = ConsentForm(request.POST, request.FILES)
+            if consent_form.is_valid():
+                consent = consent_form.save(commit=False)
+        else:
+            # Если файла нет, создаём пустую форму (она не обязательна)
+            consent_form = ConsentForm()
+            consent = None
 
-        if booking_form.is_valid() and consent_form.is_valid():
-
+        if booking_form.is_valid():
             booking = booking_form.save()
-
-            consent = consent_form.save(commit=False)
-            consent.booking = booking
-            consent.save()
-
+            
+            if consent:
+                consent.booking = booking
+                consent.save()
+            
+            from django.contrib import messages
+            messages.success(request, f'Бронирование успешно создано! Номер вашей брони: {booking.booking_reference}')
+            
             # Перенаправляем с параметром success
             return HttpResponseRedirect(reverse('booking') + '?success=1')
+        else:
+            from django.contrib import messages
+            for field, errors in booking_form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
     else:
-
         booking_form = BookingForm()
         consent_form = ConsentForm()
 
     # Передаем все туры для AJAX запросов
     tours = Tour.objects.filter(removed=False)
-
 
     return render(
         request,
@@ -78,7 +94,7 @@ def tour_list_view(request):
         tours = tours.filter(duration=duration)
     
     # Пагинация
-    paginator = Paginator(tours, 6)  # 6 туров на страницу
+    paginator = Paginator(tours, 6)
     page_number = request.GET.get('page')
     tours_page = paginator.get_page(page_number)
     
@@ -102,7 +118,16 @@ def tour_detail_view(request, pk):
     """Страница детализации тура с подробной информацией"""
     tour = get_object_or_404(Tour, pk=pk, removed=False)
     
-    bookings = Booking.objects.filter(tour=tour)
+    # Получаем все расписания для этого тура
+    schedules = TourSchedule.objects.filter(tour=tour).order_by('start_date')
+    
+    bookings = Booking.objects.filter(tour=tour).select_related('schedule')
+    
+    # Получаем всех пользователей для подтягивания телефонов
+    user_emails = [booking.email for booking in bookings]
+    users = User.objects.filter(email__in=user_emails)
+    user_phone_map = {user.email: user.phone for user in users}
+    
     consent_docs = ConsentDocument.objects.filter(booking__tour=tour)
     total_booked = sum(booking.people for booking in bookings)
     
@@ -111,7 +136,9 @@ def tour_detail_view(request, pk):
         "booking/tour_detail.html",
         {
             "tour": tour,
+            "schedules": schedules,
             "bookings": bookings,
+            "user_phone_map": user_phone_map,
             "consent_docs": consent_docs,
             "total_booked": total_booked
         }
@@ -196,13 +223,22 @@ def get_tour_details_ajax(request):
         
         schedules_data = []
         for schedule in schedules:
+            # Получаем актуальное количество забронированных мест
+            booked = Booking.objects.filter(
+                schedule=schedule,
+                status__in=['pending', 'confirmed']
+            ).aggregate(total=models.Sum('people'))['total'] or 0
+            
+            available_seats = tour.max_people - booked
+            
             schedules_data.append({
                 'id': schedule.id,
                 'start_date': schedule.start_date.strftime('%d.%m.%Y'),
                 'end_date': schedule.end_date.strftime('%d.%m.%Y'),
-                'available_seats': schedule.available_seats,
-                'total_booked': schedule.total_booked,
-                'is_available': schedule.available_seats > 0
+                'available_seats': available_seats,
+                'total_booked': booked,
+                'is_available': available_seats > 0,
+                'max_people': tour.max_people
             })
       
         all_bookings = Booking.objects.filter(tour=tour)
@@ -239,14 +275,18 @@ def get_schedule_availability_ajax(request):
     try:
         schedule = TourSchedule.objects.get(id=schedule_id, is_active=True)
         
-        # Получаем количество человек из запроса
         try:
             requested_people = int(people_count)
         except ValueError:
             requested_people = 1
         
-        # Проверяем доступность
-        available_seats = schedule.available_seats
+        # Получаем актуальное количество забронированных мест
+        booked = Booking.objects.filter(
+            schedule=schedule,
+            status__in=['pending', 'confirmed']
+        ).aggregate(total=models.Sum('people'))['total'] or 0
+        
+        available_seats = schedule.tour.max_people - booked
         is_available = available_seats >= requested_people
         
         return JsonResponse({
@@ -256,7 +296,7 @@ def get_schedule_availability_ajax(request):
                 'start_date': schedule.start_date.strftime('%d.%m.%Y'),
                 'end_date': schedule.end_date.strftime('%d.%m.%Y'),
                 'available_seats': available_seats,
-                'total_booked': schedule.total_booked,
+                'total_booked': booked,
                 'max_people': schedule.tour.max_people,
                 'is_available': is_available,
                 'requested_people': requested_people

@@ -164,22 +164,54 @@ def change_password_view(request):
 
 @login_required
 def add_favorite_view(request, tour_id):
-    """Добавление тура в избранное"""
+    """Добавление / удаление тура из избранного"""
+
     tour = get_object_or_404(Tour, id=tour_id, removed=False)
-    request.user.favorite_tours.add(tour)
-    
-    UserActivityLog.objects.create(
-        user=request.user,
-        action='add_favorite',
-        tour=tour,
-        ip_address=get_client_ip(request),
-        user_agent=request.META.get('HTTP_USER_AGENT', '')
-    )
-    
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'success': True, 'message': 'Тур добавлен в избранное'})
-    
-    messages.success(request, f'Тур "{tour.title}" добавлен в избранное')
+
+    # Проверяем: уже в избранном?
+    is_favorite = request.user.favorite_tours.filter(id=tour.id).exists()
+
+    # Если уже есть → удаляем
+    if is_favorite:
+
+        request.user.favorite_tours.remove(tour)
+
+        UserActivityLog.objects.create(
+            user=request.user,
+            action='remove_favorite',
+            tour=tour,
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+
+        # AJAX
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'is_favorite': False
+            })
+
+    # Если нет → добавляем
+    else:
+
+        request.user.favorite_tours.add(tour)
+
+        UserActivityLog.objects.create(
+            user=request.user,
+            action='add_favorite',
+            tour=tour,
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+
+        # AJAX
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'is_favorite': True
+            })
+
+    # fallback без AJAX
     return redirect(request.META.get('HTTP_REFERER', 'booking:tour_list'))
 
 

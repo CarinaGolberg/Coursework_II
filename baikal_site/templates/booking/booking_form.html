@@ -1,178 +1,1186 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Бронирование тура</title>
+{% extends 'base.html' %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/booking_form.css' %}">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
 
-<!-- Контейнер для стикеров -->
-<div id="toastContainer" class="toast-container"></div>
+{% block title %}Бронирование тура на Байкал{% endblock %}
 
-<div class="nav">
-    <a href="{% url 'home' %}">🏔️ Главная</a>
-    <a href="{% url 'booking' %}">📅 Бронирование</a>
-    <a href="{% url 'tour_list' %}">📋 Туры</a>
-</div>
+{% block content %}
+{% include 'includes/icons.html' %}
 
-<div class="container">
+<div class="booking-container">
+    <div class="booking-header">
+        <h1>Забронировать тур</h1>
+        <p class="booking-subtitle">Выберите идеальное путешествие по Байкалу</p>
+    </div>
 
-<h1>🏔️ Бронирование тура</h1>
-
-{% if booking_form.non_field_errors %}
-    <div class="form-global-errors">
-        {% for error in booking_form.non_field_errors %}
-            <div class="global-error-message">
-                ❌ {{ error }}
+    <!-- Выбор тура -->
+    <div class="booking-tours-section">
+        <div class="tours-selector-header">
+            <h2>Доступные туры</h2>
+            
+            <div class="tour-search-wrapper">
+                <svg class="search-icon" width="18" height="18">
+                    <use href="#icon-search"></use>
+                </svg>
+                <input type="text" 
+                       id="tourSearch" 
+                       placeholder="Поиск тура..." 
+                       class="tour-search-input">
             </div>
-        {% endfor %}
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            {% for error in booking_form.non_field_errors %}
-                showToast(
-                    "{{ error|escapejs }}",
-                    "error",
-                    5000
-                );
-            {% endfor %}
-        });
-    </script>
-{% endif %}
-
-{% if messages %}
-    <div style="display: none;" id="djangoMessages">
-        {% for message in messages %}
-            <div class="django-message" data-tags="{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-{% endif %}
-
-<form method="post" enctype="multipart/form-data" id="bookingForm">
-
-{% csrf_token %}
-
-<div class="form-group">
-    <label>🎯 Выберите тур</label>
-    <div class="select-with-info">
-        {{ booking_form.tour }}
-    </div>
-    <!-- Блок для информации о туре - появляется плавно при выборе -->
-    <div id="tourInfoBlock" style="margin-top: 15px; padding: 0; max-height: 0; overflow: hidden; transition: all 0.4s ease-out; background: #f0f9f0; border-radius: 8px; border-left: 4px solid #71b378;">
-        <div id="tourInfoText" style="padding: 0 15px;"></div>
-    </div>
-    {% if booking_form.tour.errors %}
-        <ul class="errorlist">{{ booking_form.tour.errors }}</ul>
-    {% endif %}
-</div>
-
-<!-- Блок для выбора даты из расписания (появляется после выбора тура) -->
-<div class="form-group" id="scheduleGroup" style="display: none;">
-    <label>📅 Выберите дату тура</label>
-    <div class="select-with-info">
-        <select name="schedule" id="id_schedule" class="form-control">
-            <option value="">Сначала выберите тур</option>
-        </select>
-    </div>
-    <div id="scheduleInfo" style="margin-top: 10px; font-size: 13px;"></div>
-    {% if booking_form.schedule.errors %}
-        <ul class="errorlist">{{ booking_form.schedule.errors }}</ul>
-    {% endif %}
-</div>
-
-<div class="form-group">
-    <label>👤 Ваше имя</label>
-    {{ booking_form.name }}
-    {% if booking_form.name.errors %}
-        <ul class="errorlist">{{ booking_form.name.errors }}</ul>
-    {% endif %}
-</div>
-
-<div class="form-group">
-    <label>📧 Email</label>
-    {{ booking_form.email }}
-    {% if booking_form.email.errors %}
-        <ul class="errorlist">{{ booking_form.email.errors }}</ul>
-    {% endif %}
-</div>
-
-<div class="form-group">
-    <label>👥 Количество человек</label>
-    {{ booking_form.people }}
-    <div id="peopleError" style="color: red; font-size: 14px; margin-top: 5px;"></div>
-    <div id="priceCalculation" style="display: none;"></div>
-    {% if booking_form.people.errors %}
-        <ul class="errorlist">{{ booking_form.people.errors }}</ul>
-    {% endif %}
-</div>
-
-<div class="form-group">
-    <label>📎 Загрузите согласие (PDF, PNG, JPG)</label>
-    {{ consent_form.document }}
-    {% if consent_form.document.errors %}
-        <ul class="errorlist">{{ consent_form.document.errors }}</ul>
-    {% endif %}
-</div>
-
-<button type="submit">✅ Забронировать</button>
-
-</form>
-
-</div>
-
-<!-- Модальное окно для детальной информации о туре -->
-<div id="tourModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="modalTitle">📋 Информация о туре</h3>
-            <span class="close">&times;</span>
         </div>
-        <div class="modal-body" id="modalBody">
-            <div style="text-align: center;">Выберите тур для просмотра информации</div>
+
+        <!-- Горизонтальный скролл туров -->
+        <div class="tours-horizontal-wrapper">
+            <button class="scroll-btn scroll-left" id="scrollLeftBtn" type="button">
+                <svg width="22" height="22">
+                    <use href="#icon-chevron-left"></use>
+                </svg>
+            </button>
+            
+            <div class="tours-horizontal" id="toursHorizontal">
+                {% for tour in tours %}
+                    <div class="tour-horizontal-card" 
+                         data-tour-id="{{ tour.id }}"
+                         data-tour-title="{{ tour.title|lower }}"
+                         data-tour-price="{{ tour.price }}"
+                         data-max-people="{{ tour.max_people }}">
+                        <div class="tour-horizontal-image">
+                            {% if tour.image %}
+                                <img src="{{ tour.image.url }}" alt="{{ tour.title }}">
+                            {% else %}
+                                <div class="tour-image-placeholder-small">
+                                    <svg width="30" height="30">
+                                        <use href="#icon-mountain"></use>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            <div class="tour-horizontal-price">{{ tour.price }} ₽</div>
+                        </div>
+                        <div class="tour-horizontal-content">
+                            <h3>{{ tour.title }}</h3>
+                            <div class="tour-horizontal-meta">
+                                <span class="meta-item">
+                                    <svg width="12" height="12">
+                                        <use href="#icon-clock"></use>
+                                    </svg>
+                                    {{ tour.duration }} дн.
+                                </span>
+                                <span class="meta-item">
+                                    <svg width="12" height="12">
+                                        <use href="#icon-users"></use>
+                                    </svg>
+                                    до {{ tour.max_people }} чел.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <button class="scroll-btn scroll-right" id="scrollRightBtn" type="button">
+                <svg width="22" height="22">
+                    <use href="#icon-chevron-right"></use>
+                </svg>
+            </button>
         </div>
-        <div class="modal-footer">
-            <button class="close-btn">Закрыть</button>
+
+        <div class="search-no-results" id="searchNoResults" style="display: none;">
+            <p>Туры не найдены</p>
         </div>
     </div>
-</div>
 
-<!-- Модальное окно для ошибки -->
-<div id="errorModal" class="modal error-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>❌ Ошибка</h3>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body" id="errorModalBody">
-            <p>Произошла ошибка</p>
-        </div>
-        <div class="modal-footer">
-            <button class="close-btn">Закрыть</button>
+    <!-- Форма бронирования -->
+    <div class="booking-form-section">
+        <div class="form-card">
+            <h2>Детали бронирования</h2>
+            
+            <form method="post" id="bookingForm" class="booking-form" action="{% url 'booking' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_tour">Выбранный тур</label>
+                    <select name="tour" id="id_tour" class="form-control" required>
+                        <option value="">-- Выберите тур --</option>
+                        {% for tour in tours %}
+                            <option value="{{ tour.id }}" data-price="{{ tour.price }}" data-max-people="{{ tour.max_people }}">
+                                {{ tour.title }} - {{ tour.price }} ₽
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Выберите тур из списка или нажмите на карточку выше</div>
+                </div>
+                
+                <!-- ДАТА ТУРА -->
+                <div class="form-group" id="dateGroup" style="display: none;">
+                    <label for="id_schedule">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Дата начала тура
+                    </label>
+                    <select name="schedule" id="id_schedule" class="form-control">
+                        <option value="">-- Сначала выберите тур --</option>
+                    </select>
+                    <div class="help-text">Выберите удобную дату начала тура</div>
+                </div>
+                
+                <!-- Блок информации о доступности мест -->
+                <div id="availabilityInfo" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="id_name">ФИО</label>
+                    <input type="text" 
+                           name="name" 
+                           id="id_name" 
+                           class="form-control" 
+                           placeholder="Иванов Иван Иванович"
+                           required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="id_phone">Телефон</label>
+                        <input type="tel" 
+                               name="phone" 
+                               id="id_phone" 
+                               class="form-control" 
+                               placeholder="+7 (999) 123-45-67"
+                               required>
+                    </div>
+                    
+                    <div class="form-group half">
+                        <label for="id_email">Email</label>
+                        <input type="email" 
+                               name="email" 
+                               id="id_email" 
+                               class="form-control" 
+                               placeholder="ivan@example.com"
+                               required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="id_people">Количество человек</label>
+                        <input type="number" 
+                               name="people" 
+                               id="id_people" 
+                               class="form-control" 
+                               min="1" 
+                               max="20"
+                               required
+                               value="1">
+                        <div class="error-message" id="peopleError" style="display: none; color: #dc3545; font-size: 0.7rem; margin-top: 5px;"></div>
+                    </div>
+                    
+                    <div class="form-group half">
+                        <label for="total_price">Итого к оплате</label>
+                        <div class="total-price-display" id="totalPriceDisplay">0 ₽</div>
+                        <input type="hidden" name="total_price" id="total_price" value="0">
+                    </div>
+                </div>
+                
+                <!-- ОСОБЫЕ ПОЖЕЛАНИЯ -->
+                <div class="form-group">
+                    <label class="wishes-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 12v8H4v-8M12 2v12m-3-3l3 3 3-3"/>
+                            <path d="M12 2H8a2 2 0 0 0-2 2v6h12V4a2 2 0 0 0-2-2z"/>
+                        </svg>
+                        Особые пожелания
+                        <span class="optional-badge">Необязательно</span>
+                    </label>
+                    <textarea name="special_requests" 
+                              id="special_requests" 
+                              class="form-control" 
+                              rows="3"
+                              placeholder="Вегетарианское меню, трансфер, особые требования, аллергии, встреча с шампанским... Всё, что сделает ваш отдых идеальным"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Забронировать</button>
+                    <a href="{% url 'tour_list' %}" class="btn-cancel-form">Отмена</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Передаем данные из Django в JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/imask"></script>
+
 <script>
-    window.toursData = {
-        {% for tour in tours %}
-        {{ tour.id }}: {
-            id: {{ tour.id }},
-            title: "{{ tour.title|escapejs }}",
-            description: "{{ tour.description|escapejs|truncatechars:200 }}",
-            image: "{% if tour.image %}{{ tour.image.url }}{% else %}{% endif %}",
-            max_people: {{ tour.max_people }},
-            price: {{ tour.price }},
-            duration: {{ tour.duration }}
-        },
-        {% endfor %}
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============ МАСКА ДЛЯ ТЕЛЕФОНА ============
+        const phoneInput = document.getElementById('id_phone');
+        if (phoneInput) {
+            IMask(phoneInput, {
+                mask: '+{7} (000) 000-00-00',
+                lazy: false,
+                placeholderChar: '_'
+            });
+        }
+        
+        // ============ ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ ============
+        const horizontalContainer = document.getElementById('toursHorizontal');
+        const scrollLeftBtn = document.getElementById('scrollLeftBtn');
+        const scrollRightBtn = document.getElementById('scrollRightBtn');
+        
+        if (horizontalContainer && scrollLeftBtn && scrollRightBtn) {
+            function checkScrollButtons() {
+                const maxScroll = horizontalContainer.scrollWidth - horizontalContainer.clientWidth;
+                scrollLeftBtn.disabled = horizontalContainer.scrollLeft <= 5;
+                scrollRightBtn.disabled = horizontalContainer.scrollLeft >= maxScroll - 5;
+            }
+            
+            scrollLeftBtn.addEventListener('click', () => {
+                horizontalContainer.scrollBy({ left: -280, behavior: 'smooth' });
+                setTimeout(checkScrollButtons, 300);
+            });
+            
+            scrollRightBtn.addEventListener('click', () => {
+                horizontalContainer.scrollBy({ left: 280, behavior: 'smooth' });
+                setTimeout(checkScrollButtons, 300);
+            });
+            
+            horizontalContainer.addEventListener('scroll', checkScrollButtons);
+            checkScrollButtons();
+            window.addEventListener('resize', checkScrollButtons);
+        }
+        
+        // ============ ЭЛЕМЕНТЫ ============
+        const tourCards = document.querySelectorAll('.tour-horizontal-card');
+        const tourSelect = document.getElementById('id_tour');
+        const scheduleSelect = document.getElementById('id_schedule');
+        const dateGroup = document.getElementById('dateGroup');
+        const availabilityInfo = document.getElementById('availabilityInfo');
+        const peopleCountInput = document.getElementById('id_people');
+        const totalPriceDisplay = document.getElementById('totalPriceDisplay');
+        const totalPriceHidden = document.getElementById('total_price');
+        const peopleError = document.getElementById('peopleError');
+        
+        let currentTourPrice = 0;
+        let currentScheduleAvailableSeats = 0;
+        let currentMaxPeople = 20;
+        
+        // ============ ВАЛИДАЦИЯ КОЛИЧЕСТВА ЧЕЛОВЕК ============
+        function validatePeopleCount(value) {
+            const numValue = parseInt(value);
+            
+            if (isNaN(value) || value === '') {
+                if (peopleError) {
+                    peopleError.textContent = 'Введите количество человек';
+                    peopleError.style.display = 'block';
+                }
+                return false;
+            }
+            
+            if (numValue <= 0) {
+                if (peopleError) {
+                    peopleError.textContent = 'Количество человек должно быть больше 0';
+                    peopleError.style.display = 'block';
+                }
+                return false;
+            }
+            
+            if (numValue > currentMaxPeople) {
+                if (peopleError) {
+                    peopleError.textContent = `Максимум для этого тура: ${currentMaxPeople} человек`;
+                    peopleError.style.display = 'block';
+                }
+                return false;
+            }
+            
+            if (peopleError) {
+                peopleError.style.display = 'none';
+            }
+            return true;
+        }
+        
+        // ============ ЗАГРУЗКА РАСПИСАНИЯ ============
+        async function loadSchedules(tourId) {
+            if (!tourId) {
+                dateGroup.style.display = 'none';
+                scheduleSelect.innerHTML = '<option value="">-- Сначала выберите тур --</option>';
+                return;
+            }
+            
+            scheduleSelect.innerHTML = '<option value="">Загрузка дат...</option>';
+            dateGroup.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/ajax/tour-details/?tour_id=${tourId}`);
+                const data = await response.json();
+                
+                if (data.success && data.schedules && data.schedules.length > 0) {
+                    scheduleSelect.innerHTML = '<option value="">-- Выберите дату --</option>';
+                    
+                    data.schedules.forEach(schedule => {
+                        const option = document.createElement('option');
+                        option.value = schedule.id;
+                        option.dataset.availableSeats = schedule.available_seats;
+                        option.dataset.maxPeople = schedule.max_people;
+                        option.dataset.startDate = schedule.start_date;
+                        option.dataset.endDate = schedule.end_date;
+                        
+                        const seatsText = schedule.available_seats > 0 
+                            ? ` ${schedule.available_seats} мест`
+                            : ` мест нет`;
+                        
+                        option.textContent = `${schedule.start_date} — ${schedule.end_date} (${seatsText})`;
+                        option.disabled = !schedule.is_available;
+                        
+                        scheduleSelect.appendChild(option);
+                    });
+                    
+                    updateSubmitButton(false);
+                } else {
+                    scheduleSelect.innerHTML = '<option value="">Нет доступных дат</option>';
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                scheduleSelect.innerHTML = '<option value="">Ошибка загрузки дат</option>';
+            }
+        }
+        
+        // ============ ОБНОВЛЕНИЕ ИНФОРМАЦИИ О ДОСТУПНОСТИ ============
+        function updateAvailabilityInfo() {
+            const selectedOption = scheduleSelect.options[scheduleSelect.selectedIndex];
+            let peopleCount = parseInt(peopleCountInput.value);
+            
+            if (isNaN(peopleCount) || peopleCount <= 0) {
+                peopleCount = 1;
+            }
+            
+            if (!selectedOption || !selectedOption.value) {
+                availabilityInfo.style.display = 'none';
+                updateSubmitButton(false);
+                return;
+            }
+            
+            const availableSeats = parseInt(selectedOption.dataset.availableSeats) || 0;
+            const maxPeople = parseInt(selectedOption.dataset.maxPeople) || 0;
+            const startDate = selectedOption.dataset.startDate;
+            const endDate = selectedOption.dataset.endDate;
+            
+            currentScheduleAvailableSeats = availableSeats;
+            
+            if (availableSeats > 0) {
+                if (peopleCount <= availableSeats) {
+                    availabilityInfo.innerHTML = `
+                        <div class="availability-success">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M8 12l3 3 6-6"/>
+                            </svg>
+                            <div>
+                                <strong>Доступно мест:</strong> ${availableSeats} из ${maxPeople}<br>
+                                <strong>Даты:</strong> ${startDate} — ${endDate}
+                            </div>
+                        </div>
+                    `;
+                    updateSubmitButton(true);
+                } else {
+                    availabilityInfo.innerHTML = `
+                        <div class="availability-warning">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none"/>
+                            </svg>
+                            <div>
+                                <strong>Недостаточно мест!</strong><br>
+                                Доступно: ${availableSeats} мест, запрошено: ${peopleCount}
+                            </div>
+                        </div>
+                    `;
+                    updateSubmitButton(false);
+                }
+                availabilityInfo.style.display = 'block';
+            } else {
+                availabilityInfo.innerHTML = `
+                    <div class="availability-error">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        <div>
+                            <strong>Нет свободных мест</strong><br>
+                            На выбранные даты все места забронированы
+                        </div>
+                    </div>
+                `;
+                availabilityInfo.style.display = 'block';
+                updateSubmitButton(false);
+            }
+        }
+        
+        // ============ РАСЧЕТ ИТОГОВОЙ ЦЕНЫ ============
+        function updateTotalPrice() {
+            let peopleCount = parseInt(peopleCountInput.value);
+            if (isNaN(peopleCount) || peopleCount <= 0) {
+                peopleCount = 1;
+                peopleCountInput.value = 1;
+            }
+            const total = currentTourPrice * peopleCount;
+            totalPriceDisplay.textContent = total.toLocaleString('ru-RU') + ' ₽';
+            totalPriceHidden.value = total;
+        }
+        
+        // ============ ОБНОВЛЕНИЕ КНОПКИ ОТПРАВКИ ============
+        function updateSubmitButton(isAvailable) {
+            const submitButton = document.querySelector('.btn-submit');
+            const hasTour = tourSelect.value;
+            const hasSchedule = scheduleSelect.value && scheduleSelect.value !== '';
+            let peopleCount = parseInt(peopleCountInput.value);
+            
+            if (isNaN(peopleCount) || peopleCount <= 0) {
+                peopleCount = 0;
+            }
+            
+            const isValidPeople = peopleCount > 0 && peopleCount <= currentMaxPeople;
+            let shouldEnable = hasTour && hasSchedule && isValidPeople && isAvailable === true;
+            
+            if (submitButton) {
+                submitButton.disabled = !shouldEnable;
+                if (!shouldEnable) {
+                    submitButton.style.opacity = '0.6';
+                    submitButton.style.cursor = 'not-allowed';
+                } else {
+                    submitButton.style.opacity = '1';
+                    submitButton.style.cursor = 'pointer';
+                }
+            }
+        }
+        
+        // ============ ОБНОВЛЕНИЕ MAX PEOPLE ============
+        function updateMaxPeople(maxPeople) {
+            currentMaxPeople = maxPeople;
+            if (peopleCountInput) {
+                peopleCountInput.max = currentMaxPeople;
+                const currentVal = parseInt(peopleCountInput.value);
+                if (currentVal > currentMaxPeople) {
+                    peopleCountInput.value = currentMaxPeople;
+                    updateTotalPrice();
+                }
+            }
+        }
+        
+        // ============ ВЫБОР ТУРА ИЗ КАРТОЧКИ ============
+        tourCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const tourId = this.dataset.tourId;
+                const tourPrice = parseInt(this.dataset.tourPrice);
+                const maxPeople = parseInt(this.dataset.maxPeople);
+                
+                for (let i = 0; i < tourSelect.options.length; i++) {
+                    if (tourSelect.options[i].value === tourId) {
+                        tourSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                tourCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentTourPrice = tourPrice;
+                updateMaxPeople(maxPeople);
+                updateTotalPrice();
+                loadSchedules(tourId);
+                updateSubmitButton(false);
+            });
+        });
+        
+        // ============ ПОИСК ============
+        const searchInput = document.getElementById('tourSearch');
+        const noResultsDiv = document.getElementById('searchNoResults');
+        
+        function filterTours() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            tourCards.forEach(card => {
+                const title = card.dataset.tourTitle || '';
+                if (searchTerm === '' || title.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            noResultsDiv.style.display = (searchTerm !== '' && visibleCount === 0) ? 'block' : 'none';
+        }
+        
+        if (searchInput) searchInput.addEventListener('input', filterTours);
+        
+        // ============ ОБРАБОТЧИКИ СОБЫТИЙ ============
+        if (tourSelect) {
+            tourSelect.addEventListener('change', function() {
+                const selectedId = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+                currentTourPrice = parseInt(selectedOption.dataset.price) || 0;
+                const maxPeople = parseInt(selectedOption.dataset.maxPeople) || 20;
+                
+                updateMaxPeople(maxPeople);
+                
+                tourCards.forEach(card => {
+                    if (card.dataset.tourId === selectedId) {
+                        card.classList.add('active');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
+                
+                updateTotalPrice();
+                loadSchedules(selectedId);
+                updateSubmitButton(false);
+            });
+        }
+        
+        if (scheduleSelect) {
+            scheduleSelect.addEventListener('change', function() {
+                if (this.value) {
+                    updateAvailabilityInfo();
+                } else {
+                    availabilityInfo.style.display = 'none';
+                    updateSubmitButton(false);
+                }
+            });
+        }
+        
+        if (peopleCountInput) {
+            peopleCountInput.addEventListener('input', function() {
+                const isValid = validatePeopleCount(this.value);
+                if (isValid) {
+                    updateTotalPrice();
+                    if (scheduleSelect.value) {
+                        updateAvailabilityInfo();
+                    }
+                } else {
+                    updateSubmitButton(false);
+                    totalPriceDisplay.textContent = '0 ₽';
+                    totalPriceHidden.value = 0;
+                    availabilityInfo.style.display = 'none';
+                }
+            });
+        }
+        
+        // ============ ПРЕДВЫБОР ТУРА ИЗ URL ============
+        const urlParams = new URLSearchParams(window.location.search);
+        const tourIdFromUrl = urlParams.get('tour');
+        
+        if (tourIdFromUrl) {
+            for (let i = 0; i < tourCards.length; i++) {
+                if (tourCards[i].dataset.tourId === tourIdFromUrl) {
+                    tourCards[i].click();
+                    break;
+                }
+            }
+        } else if (tourCards.length > 0) {
+            tourCards[0].click();
+        }
+        
+        // ============ ВАЛИДАЦИЯ ФОРМЫ ПЕРЕД ОТПРАВКОЙ ============
+        const form = document.getElementById('bookingForm');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const scheduleId = scheduleSelect.value;
+                let peopleCount = parseInt(peopleCountInput.value);
+                const emailInput = document.getElementById('id_email');
+                const phoneVal = phoneInput ? phoneInput.value : '';
+                
+                if (!tourSelect.value) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите тур');
+                    return;
+                }
+                
+                if (!scheduleId) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите дату тура');
+                    scheduleSelect.focus();
+                    return;
+                }
+                
+                if (isNaN(peopleCount) || peopleCount <= 0) {
+                    e.preventDefault();
+                    alert('Введите корректное количество человек');
+                    peopleCountInput.focus();
+                    return;
+                }
+                
+                if (peopleCount > currentScheduleAvailableSeats && currentScheduleAvailableSeats > 0) {
+                    e.preventDefault();
+                    alert(`Недостаточно мест! Доступно: ${currentScheduleAvailableSeats}`);
+                    return;
+                }
+                
+                if (emailInput && emailInput.value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailInput.value)) {
+                        e.preventDefault();
+                        alert('Введите корректный email адрес');
+                        emailInput.focus();
+                        return;
+                    }
+                }
+                
+                if (phoneVal && phoneVal.replace(/\D/g, '').length < 11) {
+                    e.preventDefault();
+                    alert('Введите корректный номер телефона (10 цифр после +7)');
+                    phoneInput.focus();
+                    return;
+                }
+            });
+        }
+        
+        updateTotalPrice();
+    });
 </script>
 
-<script src="{% static 'js/booking_form.js' %}"></script>
-</body>
-</html>
+<style>
+/* Весь ваш CSS остается без изменений */
+.booking-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 5% 60px 5%;
+    min-height: 100vh;
+}
+
+.booking-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.booking-header h1 {
+    font-size: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.booking-header h1:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #00E5FF;
+    margin: 16px auto 0;
+}
+
+.booking-subtitle {
+    color: #A0B3C9;
+    font-size: 1rem;
+    margin-top: 16px;
+}
+
+/* ============ ВЫБОР ТУРА ============ */
+.booking-tours-section {
+    background: rgba(30, 32, 34, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 40px;
+}
+
+.tours-selector-header {
+    margin-bottom: 24px;
+}
+
+.tours-selector-header h2 {
+    font-size: 1.4rem;
+    font-family: 'Cormorant Garamond', serif;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.tour-search-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    stroke: #A0B3C9;
+    width: 18px;
+    height: 18px;
+}
+
+.tour-search-input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    background: rgba(20, 22, 24, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    font-size: 0.9rem;
+    font-family: 'Manrope', sans-serif;
+    color: #E8EDF2;
+}
+
+.tour-search-input:focus {
+    outline: none;
+    border-color: #00E5FF;
+}
+
+.tours-horizontal-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.scroll-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.35s ease;
+}
+
+.scroll-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.scroll-btn:hover:not(:disabled) {
+    background: rgba(0, 229, 255, 0.18);
+    color: var(--ice-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.18);
+}
+
+.scroll-btn:hover:not(:disabled) svg {
+    stroke: #00E5FF;
+}
+
+.scroll-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.scroll-btn:disabled:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: none;
+}
+
+.scroll-btn:disabled:hover svg {
+    stroke: white;
+}
+
+.tours-horizontal {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-behavior: auto;
+    padding: 8px 4px 16px 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #00E5FF #2C3035;
+}
+
+.tours-horizontal::-webkit-scrollbar {
+    height: 6px;
+}
+
+.tours-horizontal::-webkit-scrollbar-track {
+    background: #2C3035;
+    border-radius: 10px;
+}
+
+.tours-horizontal::-webkit-scrollbar-thumb {
+    background: #00E5FF;
+    border-radius: 10px;
+}
+
+.tour-horizontal-card {
+    min-width: 260px;
+    background: rgba(20, 22, 24, 0.8);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.tour-horizontal-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 229, 255, 0.5);
+}
+
+.tour-horizontal-card.active {
+    border-color: #00E5FF;
+    background: rgba(0, 229, 255, 0.05);
+}
+
+.tour-horizontal-image {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+}
+
+.tour-horizontal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.tour-horizontal-card:hover .tour-horizontal-image img {
+    transform: scale(1.05);
+}
+
+.tour-image-placeholder-small {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1E2022 0%, #2C3035 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tour-image-placeholder-small svg {
+    stroke: #00E5FF;
+    opacity: 0.5;
+}
+
+.tour-horizontal-price {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: #00E5FF;
+    color: #0A1A2F;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.tour-horizontal-content {
+    padding: 16px;
+}
+
+.tour-horizontal-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tour-horizontal-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.7rem;
+    color: #A0B3C9;
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.meta-item svg {
+    stroke: #A0B3C9;
+    width: 12px;
+    height: 12px;
+}
+
+.search-no-results {
+    text-align: center;
+    padding: 40px;
+    color: #A0B3C9;
+}
+
+/* ============ ФОРМА ============ */
+.booking-form-section {
+    background: rgba(30, 32, 34, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-card h2 {
+    font-size: 1.4rem;
+    font-family: 'Cormorant Garamond', serif;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.booking-form .form-group {
+    margin-bottom: 24px;
+}
+
+.booking-form .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #A0B3C9;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wishes-label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px !important;
+}
+
+.wishes-label svg {
+    stroke: #00E5FF;
+}
+
+.optional-badge {
+    background: rgba(0, 229, 255, 0.15);
+    color: #00E5FF;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.booking-form .form-control {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(20, 22, 24, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: 'Manrope', sans-serif;
+    color: #E8EDF2;
+}
+
+.booking-form .form-control:focus {
+    outline: none;
+    border-color: #00E5FF;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+
+.booking-form select.form-control {
+    cursor: pointer;
+}
+
+.booking-form textarea.form-control {
+    resize: vertical;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.help-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #5A6B7A;
+    margin-top: 6px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.7rem;
+    margin-top: 5px;
+}
+
+.total-price-display {
+    padding: 12px 16px;
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #00E5FF;
+    text-align: center;
+}
+
+/* ============ ДОСТУПНОСТЬ ============ */
+#availabilityInfo {
+    margin-bottom: 24px;
+}
+
+.availability-success,
+.availability-warning,
+.availability-error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.availability-success {
+    background: rgba(46, 125, 50, 0.15);
+    border-left: 3px solid #2e7d32;
+    color: #a5d6a7;
+}
+
+.availability-warning {
+    background: rgba(245, 124, 0, 0.15);
+    border-left: 3px solid #f57c00;
+    color: #ffcc80;
+}
+
+.availability-error {
+    background: rgba(220, 53, 69, 0.15);
+    border-left: 3px solid #dc3545;
+    color: #ef9a9a;
+}
+
+/* ============ КНОПКИ ============ */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-submit,
+.btn-cancel-form {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: unset;
+    height: 46px;
+    padding: 0 26px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: all .3s ease;
+    margin: 0 !important;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-submit {
+    background: #00E5FF;
+    color: #0A1A2F;
+    margin-right: 6px !important;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: #00c4d8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 229, 255, 0.3);
+}
+
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel-form {
+    background: rgba(255, 255, 255, 0.07);
+    color: #D6E0EA;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel-form:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-submit,
+    .btn-cancel-form {
+        width: 100%;
+        padding: 0 20px;
+        margin-right: 0 !important;
+    }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+/* ============ АДАПТИВ ============ */
+@media (max-width: 768px) {
+    .booking-container {
+        padding: 100px 5% 40px;
+    }
+    
+    .booking-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-submit,
+    .btn-cancel-form {
+        width: 100%;
+        padding: 0 20px;
+    }
+    
+    .scroll-btn {
+        display: none;
+    }
+    
+    .tour-horizontal-card {
+        min-width: 220px;
+    }
+}
+</style>
+{% endblock %}

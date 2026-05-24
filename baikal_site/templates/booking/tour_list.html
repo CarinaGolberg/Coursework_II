@@ -4,14 +4,54 @@
 {% block title %}Туры на Байкал{% endblock %}
 
 {% block content %}
-<div class="tours-container">
-    <h1>🏔️ Туры на Байкал</h1>
+{% include 'includes/icons.html' %}
+
+<!-- Hero секция (видео на весь экран) -->
+ {% if not request.GET.skip_hero %}
+<section class="hero">
+    <div class="hero-bg-wrapper">
+        <video class="hero-video" autoplay muted loop playsinline poster="{% static 'images/baikal-poster.jpg' %}">
+            <source src="{% static 'videos/baikal-hero.mp4' %}" type="video/mp4">
+            <img src="{% static 'images/baikal-fallback.jpg' %}" alt="Байкал">
+        </video>
+    </div>
+    <div class="hero-overlay"></div>
+    
+    <div class="hero-content">
+        <h1 class="hero-title">Байкал. Сибирская роскошь.</h1>
+        <p class="hero-subtitle">Путешествия, которые остаются с нами навсегда.</p>
+        <a href="#tours-section" class="hero-cta">
+            <span>Исследовать туры</span>
+            <svg class="arrow-down" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        </a>
+    </div>
+    
+    <div class="hero-scroll">
+        <span>SCROLL</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Основной контент (список туров) -->
+<div class="tours-container" id="tours-section">
+    <div class="section-header">
+        <h2>Наши экспедиции</h2>
+        <p class="section-subtitle">Откройте для себя уникальные маршруты по самому глубокому озеру планеты.</p>
+        <p class="section-subtitle">Глубина Байкала - 1642 м.</p>
+    </div>
     
     <!-- Форма поиска и фильтрации -->
     <div class="filters-section">
         <form method="get" class="filters-form">
+            {% if request.GET.skip_hero %}
+                <input type="hidden" name="skip_hero" value="1">
+            {% endif %}
+
             <div class="filter-group">
-                <input type="text" name="search" placeholder="🔍 Поиск тура..." value="{{ search_query }}">
+                <input type="text" name="search" placeholder="Поиск тура..." value="{{ search_query }}">
             </div>
             
             <div class="filter-group">
@@ -42,28 +82,57 @@
     {% if tours %}
         <div class="tours-grid">
             {% for tour in tours %}
-                <div class="tour-card">
-                    {% if tour.image %}
-                        <img src="{{ tour.image.url }}" alt="{{ tour.title }}" class="tour-image">
-                    {% else %}
-                        <div class="tour-image-placeholder">🏔️</div>
-                    {% endif %}
-                    
-                    <div class="tour-info">
+                <div class="tour-card fade-up">
+                    <div class="tour-card-image">
+                        {% if tour.image %}
+                            <img src="{{ tour.image.url }}" alt="{{ tour.title }}">
+                        {% else %}
+                            <div class="tour-image-placeholder">
+                                <svg class="icon icon-mountain" width="40" height="40">
+                                    <use href="#icon-mountain"></use>
+                                </svg>
+                            </div>
+                        {% endif %}
+                        <div class="tour-card-overlay"></div>
+                        <div class="tour-card-price">{{ tour.price }} ₽ <small>/чел.</small></div>
+                    </div>
+                    <div class="tour-card-content">
                         <h3>{{ tour.title }}</h3>
-                        <p class="tour-description">{{ tour.description|truncatechars:100 }}</p>
-                        
-                        <div class="tour-details">
-                            <span class="tour-duration">⏱ {{ tour.duration }} дней</span>
-                            <span class="tour-price">💰 {{ tour.price }} руб.</span>
-                            <span class="tour-max">👥 {{ tour.max_people }} чел.</span>
+                        <p>{{ tour.description|truncatechars:100 }}</p>
+                        <div class="tour-meta">
+                            <span class="tour-duration">
+                                <svg class="icon icon-clock" width="14" height="14">
+                                    <use href="#icon-clock"></use>
+                                </svg>
+                                {{ tour.duration }} дней
+                            </span>
+                            <span class="tour-max">
+                                <svg class="icon icon-users" width="14" height="14">
+                                    <use href="#icon-users"></use>
+                                </svg>
+                                до {{ tour.max_people }} чел.
+                            </span>
                         </div>
-                        
                         <div class="tour-actions">
-                            <a href="{% url 'tour_detail' tour.id %}" class="btn-detail">Подробнее</a>
-                            <a href="{% url 'booking' %}?tour={{ tour.id }}" class="btn-book">Забронировать</a>
+                            <a href="{% url 'tour_detail' tour.id %}" class="btn-outline">Подробнее</a>
                             {% if user.is_authenticated %}
-                                <a href="{% url 'accounts:add_favorite' tour.id %}" class="btn-favorite" onclick="return confirm('Добавить в избранное?')">❤️</a>
+                                <a href="{% url 'booking' %}?tour={{ tour.id }}" class="btn-book">Забронировать</a>
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}" class="btn-book btn-book-disabled">Войдите, чтобы забронировать</a>
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'accounts:add_favorite' tour.id %}" 
+                                   class="btn-favorite favorite-btn" 
+                                   data-tour-id="{{ tour.id }}"
+                                   data-in-favorite="{% if tour in user.favorite_tours.all %}true{% else %}false{% endif %}">
+                                    <svg class="icon icon-heart" width="18" height="18">
+                                        {% if tour in user.favorite_tours.all %}
+                                            <use href="#icon-heart-filled"></use>
+                                        {% else %}
+                                            <use href="#icon-heart-outline"></use>
+                                        {% endif %}
+                                    </svg>
+                                </a>
                             {% endif %}
                         </div>
                     </div>
@@ -75,254 +144,711 @@
         {% if is_paginated %}
             <div class="pagination">
                 {% if tours.has_previous %}
-                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">« Первая</a>
-                    <a href="?page={{ tours.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">‹ Предыдущая</a>
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">«</a>
+                    <a href="?page={{ tours.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">‹</a>
                 {% endif %}
                 
                 <span class="page-current">
-                    Страница {{ tours.number }} из {{ tours.paginator.num_pages }}
+                    {{ tours.number }} / {{ tours.paginator.num_pages }}
                 </span>
                 
                 {% if tours.has_next %}
-                    <a href="?page={{ tours.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">Следующая ›</a>
-                    <a href="?page={{ tours.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">Последняя »</a>
+                    <a href="?page={{ tours.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">›</a>
+                    <a href="?page={{ tours.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if selected_duration %}&duration={{ selected_duration }}{% endif %}" class="page-link">»</a>
                 {% endif %}
             </div>
         {% endif %}
     {% else %}
         <div class="no-tours">
-            <p>😕 По вашему запросу ничего не найдено</p>
+            <p>По вашему запросу ничего не найдено</p>
             <a href="{% url 'tour_list' %}" class="btn-reset">Сбросить фильтры</a>
         </div>
     {% endif %}
 </div>
 
+<script>
+    // При загрузке страницы проверяем, есть ли параметры
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Сохраняем skip_hero для всех ссылок (НОВАЯ ЛОГИКА)
+        const skipHero = urlParams.has('skip_hero') ? '&skip_hero=1' : '';
+        
+        // Обновляем ссылки пагинации (НОВОЕ)
+        document.querySelectorAll('.page-link').forEach(link => {
+            let href = link.getAttribute('href');
+            if (href && href !== '#' && !href.includes('skip_hero')) {
+                link.setAttribute('href', href + skipHero);
+            }
+        });
+        
+        // Обновляем кнопку "Сбросить" (НОВОЕ)
+        const resetLink = document.querySelector('.btn-reset');
+        if (resetLink && resetLink.getAttribute('href') === '{% url "tour_list" %}') {
+            resetLink.setAttribute('href', '{% url "tour_list" %}' + skipHero);
+        }
+        
+        // Если есть параметры (page, search, min_price, max_price, duration) - скроллим к турам
+        if (urlParams.has('page') || urlParams.has('search') || 
+            urlParams.has('min_price') || urlParams.has('max_price') || 
+            urlParams.has('duration')) {
+            
+            const toursSection = document.getElementById('tours-section');
+            if (toursSection) {
+                setTimeout(function() {
+                    toursSection.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 200);
+            }
+        }
+    });
+    
+    // AJAX для избранного в списке туров
+    document.addEventListener('DOMContentLoaded', function() {
+        const favoriteBtns = document.querySelectorAll('.favorite-btn');
+        
+        favoriteBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const url = this.href;
+                const iconUse = this.querySelector('.icon use');
+                const isFavorite = this.dataset.inFavorite === 'true';
+                
+                // Меняем состояние оптимистично
+                if (isFavorite) {
+                    if (iconUse) {
+                        iconUse.setAttribute('href', '#icon-heart-outline');
+                    }
+                    this.dataset.inFavorite = 'false';
+                } else {
+                    if (iconUse) {
+                        iconUse.setAttribute('href', '#icon-heart-filled');
+                    }
+                    this.dataset.inFavorite = 'true';
+                }
+                
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        // Если ошибка - возвращаем обратно
+                        if (isFavorite) {
+                            if (iconUse) iconUse.setAttribute('href', '#icon-heart-filled');
+                            this.dataset.inFavorite = 'true';
+                        } else {
+                            if (iconUse) iconUse.setAttribute('href', '#icon-heart-outline');
+                            this.dataset.inFavorite = 'false';
+                        }
+                        showToast(data.error || 'Ошибка', 'error', 3000);
+                    } else {
+                        showToast(data.message || (isFavorite ? 'Удалено из избранного' : 'Добавлено в избранное'), 'success', 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Favorite error:', error);
+                    // Возвращаем обратно при ошибке
+                    if (isFavorite) {
+                        if (iconUse) iconUse.setAttribute('href', '#icon-heart-filled');
+                        this.dataset.inFavorite = 'true';
+                    } else {
+                        if (iconUse) iconUse.setAttribute('href', '#icon-heart-outline');
+                        this.dataset.inFavorite = 'false';
+                    }
+                    showToast('Ошибка соединения', 'error', 3000);
+                });
+            });
+        });
+    });
+    
+    function showToast(message, type, duration) {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;';
+            document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: ${type === 'success' ? '#2e7d32' : '#dc3545'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: fadeInOut 3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        toast.textContent = message;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 2700);
+    }
+</script>
+
 <style>
+/* Дополнительные стили для совместимости с новым дизайном */
 .tours-container {
-    max-width: 1200px;
+    margin-top: 120px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 120px 5% 60px 5%;
+    background: var(--baikal-deep, #0A1A2F);
 }
 
-h1 {
+.section-header {
     text-align: center;
-    color: #2d5a2e;
-    margin-bottom: 30px;
+    margin-bottom: 50px;
 }
 
-/* Фильтры */
+.section-header h2 {
+    font-size: 2.5rem;
+    color: white;
+    font-family: 'Cormorant Garamond', serif;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.section-header h2:after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: var(--ice-cyan, #00E5FF);
+}
+
+.section-subtitle {
+    color: var(--text-secondary, #A0B3C9);
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+/* Фильтры в новом стиле */
 .filters-section {
-    background: #f0f9f0;
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-}
-
-.filters-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: center;
-    justify-content: center;
+    background: var(--graphite-light, #2C3035);
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 40px;
 }
 
 .filter-group input,
 .filter-group select {
-    padding: 10px 15px;
-    border: 2px solid #c8e6c9;
-    border-radius: 8px;
-    font-size: 14px;
-    min-width: 150px;
+    background: var(--graphite, #1E2022);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    color: var(--text-primary, #E8EDF2);
 }
 
-.btn-filter, .btn-reset {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-block;
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--ice-cyan, #00E5FF);
+    outline: none;
 }
 
 .btn-filter {
-    background: #71b378;
-    color: white;
-}
-
-.btn-filter:hover {
-    background: #5a9e60;
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
 }
 
 .btn-reset {
-    background: #6c757d;
-    color: white;
+    background: var(--graphite, #1E2022);
+    color: var(--text-primary, #E8EDF2);
 }
 
 .btn-reset:hover {
-    background: #5a6268;
+    background: var(--ice-cyan-dim, rgba(0, 229, 255, 0.15));
+    color: var(--ice-cyan, #00E5FF);
 }
 
 /* Сетка туров */
 .tours-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
+    gap: 30px;
+    align-items: stretch;
 }
 
+/* Карточка тура */
 .tour-card {
-    background: white;
-    border-radius: 15px;
+    background: var(--graphite, #1E2022);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .tour-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.5);
+    border-color: rgba(0, 229, 255, 0.3);
 }
 
-.tour-image {
+.tour-card-image {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tour-card-image img {
     width: 100%;
-    height: 200px;
+    height: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
 }
 
-.tour-image-placeholder {
+.tour-card:hover .tour-card-image img {
+    transform: scale(1.08);
+}
+
+.tour-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 200px;
-    background: linear-gradient(135deg, #71b378 0%, #2d5a2e 100%);
+    height: 100%;
+    background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 100%);
+}
+
+.tour-card-price {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    z-index: 2;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 60px;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.tour-card-price small {
+    font-size: 0.65rem;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.tour-card-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tour-card-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
     color: white;
+    margin-bottom: 12px;
+    min-height: 4.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
 }
 
-.tour-info {
-    padding: 20px;
-}
-
-.tour-info h3 {
-    margin: 0 0 10px 0;
-    color: #2d5a2e;
-    font-size: 20px;
-}
-
-.tour-description {
-    color: #666;
-    font-size: 14px;
+.tour-card-content p {
+    color: var(--text-secondary, #A0B3C9);
+    font-size: 0.85rem;
     line-height: 1.5;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    min-height: 3.8rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.tour-details {
+.tour-meta {
     display: flex;
-    gap: 15px;
+    gap: 16px;
     margin-bottom: 20px;
-    font-size: 13px;
-    color: #555;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #A0B3C9);
+}
+
+.tour-meta .icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    vertical-align: middle;
+    stroke: #00E5FF !important;
+    stroke-width: 1.5;
 }
 
 .tour-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
+    margin-top: auto;
 }
 
-.btn-detail, .btn-book, .btn-favorite {
-    padding: 8px 15px;
-    border-radius: 8px;
+/* Кнопки */
+.btn-outline, .btn-book {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
     text-decoration: none;
-    font-size: 14px;
+    border-radius: 40px;
     transition: all 0.3s ease;
     text-align: center;
-}
-
-.btn-detail {
-    background: #17a2b8;
-    color: white;
     flex: 1;
+    white-space: nowrap;
+    cursor: pointer;
 }
 
-.btn-detail:hover {
-    background: #138496;
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--ice-cyan, #00E5FF);
+    color: var(--ice-cyan, #00E5FF);
+}
+
+.btn-outline:hover {
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
 }
 
 .btn-book {
-    background: #71b378;
-    color: white;
-    flex: 1;
+    background: rgba(44, 48, 53, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary, #E8EDF2);
 }
 
 .btn-book:hover {
-    background: #5a9e60;
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
+    border-color: var(--ice-cyan, #00E5FF);
 }
 
+/* Заблокированная кнопка для неавторизованных */
+.btn-book-disabled {
+    background: rgba(255, 255, 255, 0.05);
+    color: #5A6B7A;
+    cursor: not-allowed;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-book-disabled:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: none;
+    box-shadow: none;
+    color: #5A6B7A;
+}
+
+/* КНОПКА ИЗБРАННОГО (FIXED) */
 .btn-favorite {
-    background: #ffc107;
-    color: #333;
-    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.6);
 }
 
+/* hover */
 .btn-favorite:hover {
-    background: #e0a800;
+    background: rgba(255, 107, 107, 0.15);
+    transform: scale(1.05);
+    border-color: rgba(255, 107, 107, 0.5);
+    color: #ff6b6b;
 }
+
+/* иконка теперь полностью зависит от color */
+.btn-favorite .icon {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor !important;
+    fill: none !important;
+    stroke-width: 1.5;
+}
+
+/* активное состояние */
+.btn-favorite[data-in-favorite="true"] {
+    color: #ff6b6b;
+}
+
 
 /* Пагинация */
 .pagination {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 30px;
+    margin-top: 40px;
     flex-wrap: wrap;
 }
 
 .page-link {
-    padding: 8px 15px;
-    background: #f0f9f0;
-    color: #2d5a2e;
+    padding: 8px 14px;
+    background: var(--graphite, #1E2022);
+    color: var(--text-secondary, #A0B3C9);
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 30px;
     transition: all 0.3s ease;
 }
 
 .page-link:hover {
-    background: #71b378;
-    color: white;
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
 }
 
 .page-current {
-    padding: 8px 15px;
-    background: #71b378;
-    color: white;
-    border-radius: 8px;
+    padding: 8px 14px;
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
+    border-radius: 30px;
+    font-weight: 600;
 }
 
 .no-tours {
     text-align: center;
-    padding: 50px;
-    background: #f0f9f0;
-    border-radius: 15px;
+    padding: 60px;
+    background: var(--graphite, #1E2022);
+    border-radius: 20px;
 }
 
-/* Адаптивность */
+.tour-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1E2022 0%, #2C3035 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tour-image-placeholder .icon {
+    width: 50px;
+    height: 50px;
+    stroke: #00E5FF !important;
+    opacity: 0.5;
+}
+
+/* Hero секция */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.hero-bg-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(10, 26, 47, 0.75) 0%, rgba(0, 0, 0, 0.45) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+    width: 90%;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    animation: fadeInUp 1s ease;
+}
+
+.hero-subtitle {
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 32px;
+    animation: fadeInUp 1s ease 0.2s both;
+}
+
+.hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    background: transparent;
+    border: 2px solid var(--ice-cyan, #00E5FF);
+    color: var(--ice-cyan, #00E5FF);
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    animation: fadeInUp 1s ease 0.4s both;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+}
+
+.hero-cta:hover {
+    background: var(--ice-cyan, #00E5FF);
+    color: var(--baikal-deep, #0A1A2F);
+    transform: translateY(-3px);
+}
+
+.hero-cta .arrow-down {
+    transition: transform 0.3s ease;
+}
+
+.hero-cta:hover .arrow-down {
+    transform: translateY(4px);
+}
+
+.hero-scroll {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 2;
+    animation: bounce 2s infinite;
+}
+
+.hero-scroll span {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 8px;
+}
+
+.scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+    margin: 0 auto;
+}
+
+/* Убираем возможные отступы body */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Для контента после hero */
+.tours-section {
+    position: relative;
+    z-index: 2;
+    background: var(--baikal-deep, #0A1A2F);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(100%); }
+    10% { opacity: 1; transform: translateX(0); }
+    90% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
 @media (max-width: 768px) {
-    .tours-grid {
-        grid-template-columns: 1fr;
+    .hero-title {
+        font-size: 2.5rem;
     }
     
-    .filters-form {
-        flex-direction: column;
+    .hero-subtitle {
+        font-size: 1rem;
     }
     
-    .filter-group input,
-    .filter-group select {
-        width: 100%;
+    .hero-cta {
+        padding: 10px 24px;
+        font-size: 0.9rem;
     }
     
-    .tour-details {
+    .tours-container {
+        padding: 40px 20px;
+    }
+    
+    .section-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .tour-actions {
         flex-wrap: wrap;
+    }
+    
+    .btn-outline, .btn-book {
+        flex: auto;
+        width: calc(50% - 5px);
     }
 }
 </style>
