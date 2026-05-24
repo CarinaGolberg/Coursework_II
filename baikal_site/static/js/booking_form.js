@@ -567,7 +567,7 @@ async function checkAvailability(scheduleId, peopleCount) {
 
 // AJAX отправка формы
 async function submitBookingForm(formData) {
-    const response = await fetch('/book/', {
+    const response = await fetch('/booking/', {
         method: 'POST',
         body: formData,
         headers: {

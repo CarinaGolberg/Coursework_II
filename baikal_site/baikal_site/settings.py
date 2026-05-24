@@ -133,8 +133,16 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = 'accounts.User'
 
 # Настройки email (для разработки используем консоль)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@baikal-tour.com'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# DEFAULT_FROM_EMAIL = 'noreply@baikal-tour.com'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'tarb.sofia@gmail.com'
+EMAIL_HOST_PASSWORD = 'kjwm xwib mbfs xopy' 
+DEFAULT_FROM_EMAIL = 'tarb.sofia@gmail.com'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = "media"
