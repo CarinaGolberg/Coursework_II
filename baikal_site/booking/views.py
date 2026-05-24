@@ -9,6 +9,8 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.mail import send_mail 
+from django.conf import settings 
 from .models import Tour, Booking, ConsentDocument, TourSchedule
 from .forms import BookingForm, ConsentForm, TourForm
 
@@ -24,10 +26,43 @@ def booking_view(request):
         if booking_form.is_valid() and consent_form.is_valid():
 
             booking = booking_form.save()
+            
+            # Автоматическое подтверждение бронирования
+            booking.status = 'confirmed'
+            booking.save()
 
             consent = consent_form.save(commit=False)
             consent.booking = booking
             consent.save()
+
+            # Отправка письма-подтверждения
+            try:
+                total_price = booking.tour.price * booking.people
+                
+                email_body = f"""
+Здравствуйте, {booking.name}!
+
+Ваше бронирование подтверждено.
+
+Тур: {booking.tour.title}
+Дата: {booking.schedule.start_date.strftime('%d.%m.%Y')}
+Человек: {booking.people}
+Сумма: {total_price:,.0f} руб.
+Код: {booking.booking_reference}
+
+С уважением, Baikal Tour
+"""
+                
+                send_mail(
+                    subject=f'Бронирование тура "{booking.tour.title}"',
+                    message=email_body.strip(),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[booking.email],
+                    fail_silently=False,
+                )
+                print(f"Письмо отправлено на {booking.email}")
+            except Exception as e:
+                print(f"Ошибка отправки письма: {e}")
 
             # Перенаправляем с параметром success
             return HttpResponseRedirect(reverse('booking') + '?success=1')
@@ -39,7 +74,6 @@ def booking_view(request):
 
     # Передаем все туры для AJAX запросов
     tours = Tour.objects.filter(removed=False)
-
 
     return render(
         request,
