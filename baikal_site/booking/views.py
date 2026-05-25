@@ -13,6 +13,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from .models import Tour, Booking, ConsentDocument, TourSchedule
 from .forms import BookingForm, ConsentForm, TourForm
 from accounts.models import User
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def booking_view(request):
@@ -21,31 +24,68 @@ def booking_view(request):
     if request.method == "POST":
 
         booking_form = BookingForm(request.POST)
-        
+
         # Проверяем, есть ли файл в запросе
         if request.FILES.get('document'):
             consent_form = ConsentForm(request.POST, request.FILES)
             if consent_form.is_valid():
                 consent = consent_form.save(commit=False)
         else:
-            # Если файла нет, создаём пустую форму (она не обязательна)
+            # Если файла нет, создаём пустую форму
             consent_form = ConsentForm()
             consent = None
 
         if booking_form.is_valid():
             booking = booking_form.save()
-            
+
+            booking.status = 'confirmed'
+            booking.save()
+
+            # Сохраняем документ согласия
             if consent:
                 consent.booking = booking
                 consent.save()
-            
-            from django.contrib import messages
-            messages.success(request, f'Бронирование успешно создано! Номер вашей брони: {booking.booking_reference}')
-            
-            # Перенаправляем с параметром success
+
+            # =========================
+            # ОТПРАВКА EMAIL
+            # =========================
+            try:
+                total_price = booking.tour.price * booking.people
+                subject = f'Подтверждение бронирования тура #{booking.booking_reference}'
+
+                message = f"""
+Здравствуйте, {booking.name}!
+
+Ваше бронирование подтверждено.
+
+Тур: {booking.tour.title}
+Дата: {booking.schedule.start_date.strftime('%d.%m.%Y')}
+Человек: {booking.people}
+Сумма: {total_price:,.0f} руб.
+Код: {booking.booking_reference}
+
+С уважением, BAIKALLUX
+"""
+
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[booking.email],
+                    fail_silently=False,
+                )
+
+            except Exception as e:
+                print(f"Ошибка отправки email: {e}")
+
+            messages.success(
+                request,
+                f'Бронирование успешно создано! Номер вашей брони: {booking.booking_reference}'
+            )
+
             return HttpResponseRedirect(reverse('booking') + '?success=1')
+
         else:
-            from django.contrib import messages
             for field, errors in booking_form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
