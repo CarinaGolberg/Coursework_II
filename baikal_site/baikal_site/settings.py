@@ -90,8 +90,8 @@ DATABASES = {
         'NAME': 'baikal_tours_1',        
         'USER': 'django',                 
         'PASSWORD': 'Django6655~',      
-        'HOST': '192.168.88.13',            
-        'PORT': '3306',                 
+        'HOST': '31.148.48.193',            
+        'PORT': '6633',                 
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
