@@ -1,4 +1,4 @@
-// booking_form.js - Полная версия с AJAX отправкой
+// booking_form.js
 
 // Глобальные переменные
 let currentTourData = null;
@@ -312,7 +312,6 @@ function getCSRFToken() {
     return cookieValue ? cookieValue[2] : null;
 }
 
-// ============= AJAX ФУНКЦИИ =============
 
 // Загрузка расписания при выборе тура
 async function loadSchedule(tourId) {
@@ -583,7 +582,6 @@ async function submitBookingForm(formData) {
     return await response.json();
 }
 
-// ============= ИНИЦИАЛИЗАЦИЯ =============
 document.addEventListener('DOMContentLoaded', function() {
     const tourModal = document.getElementById('tourModal');
     const errorModal = document.getElementById('errorModal');
@@ -663,7 +661,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // ОТПРАВКА ФОРМЫ - ПОЛНОСТЬЮ AJAX
     if (bookingForm) {
         bookingForm.addEventListener('submit', async function(event) {
             event.preventDefault();

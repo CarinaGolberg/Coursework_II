@@ -2,9 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    /* =========================================
-       NAVIGATION + SCROLL TOP BUTTON
-    ========================================= */
 
     const nav = document.getElementById('mainNav');
     const hero = document.getElementById('hero');
@@ -50,9 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
 
-    /* =========================================
-       ПЛАВНЫЙ СКРОЛЛ ДЛЯ ЯКОРЕЙ
-    ========================================= */
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
@@ -77,10 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
 
-    /* =========================================
-       ANIMATION ON SCROLL
-    ========================================= */
-
     const fadeElements = document.querySelectorAll('.fade-up');
 
     const observer = new IntersectionObserver((entries) => {
@@ -104,9 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fadeElements.forEach(el => observer.observe(el));
 
-    /* =========================================
-       TOAST NOTIFICATIONS
-    ========================================= */
 
     window.showToast = function(
         message,
@@ -177,9 +164,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-/* =========================================
-   TOAST ANIMATIONS
-========================================= */
 
 const style = document.createElement('style');
 

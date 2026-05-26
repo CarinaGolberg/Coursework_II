@@ -52,10 +52,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Убедитесь, что CSRF cookie установлен
-CSRF_COOKIE_SECURE = False  # Для разработки (True для HTTPS)
-CSRF_COOKIE_HTTPONLY = False  # Должен быть False, чтобы JS мог прочитать cookie
-CSRF_USE_SESSIONS = False  # Используем cookie, а не сессии
+# Сессии
+SESSION_COOKIE_AGE = 1209600
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_HTTPONLY = True
+
+# CSRF
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
 
 ROOT_URLCONF = 'baikal_site.urls'
 
@@ -83,11 +87,11 @@ WSGI_APPLICATION = 'baikal_site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'baikal_tours_1',        # Название базы данных
-        'USER': 'django',                 # Ваш пользователь MySQL
-        'PASSWORD': 'Django6655~',       # Ваш пароль MySQL
-        'HOST': '192.168.88.13',            # Или 127.0.0.1
-        'PORT': '3306',                 # Стандартный порт MySQL
+        'NAME': 'baikal_tours_1',        
+        'USER': 'django',                 
+        'PASSWORD': 'Django6655~',      
+        'HOST': '192.168.88.13',            
+        'PORT': '3306',                 
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -140,7 +144,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Кастомная модель пользователя
 AUTH_USER_MODEL = 'accounts.User'
 
-# Настройки email (для разработки используем консоль)
+# Настройки email
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -152,3 +156,13 @@ DEFAULT_FROM_EMAIL = 'tarb.sofia@gmail.com'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = "media"
+
+
+# Кэширование
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'cache',
+        'TIMEOUT': 300,  # 5 минут
+    }
+}

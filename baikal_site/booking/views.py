@@ -16,6 +16,9 @@ from accounts.models import User
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
+from django.core.cache import cache
 
 
 def booking_view(request):
@@ -46,9 +49,6 @@ def booking_view(request):
                 consent.booking = booking
                 consent.save()
 
-            # =========================
-            # ОТПРАВКА EMAIL
-            # =========================
             try:
                 total_price = booking.tour.price * booking.people
                 subject = f'Подтверждение бронирования тура #{booking.booking_reference}'
@@ -109,7 +109,18 @@ def booking_view(request):
 
 
 def tour_list_view(request):
-    """Страница со списком всех не удаленных туров"""
+    """Страница со списком всех туров"""
+    
+    # Создаём ключ кэша на основе параметров запроса
+    cache_key = f'tour_list_{request.GET.urlencode()}_{request.user.is_authenticated}'
+    
+    # Пытаемся получить данные из кэша
+    cached_data = cache.get(cache_key)
+    
+    if cached_data:
+        return render(request, "booking/tour_list.html", cached_data)
+    
+    # Если данных нет в кэше — делаем запросы к БД
     tours = Tour.objects.filter(removed=False)
     
     # Поиск
@@ -151,6 +162,9 @@ def tour_list_view(request):
         'is_paginated': tours_page.has_other_pages(),
     }
     
+    # Сохраняем результат в кэш на 5 минут
+    cache.set(cache_key, context, 300)
+    
     return render(request, "booking/tour_list.html", context)
 
 
@@ -187,6 +201,7 @@ def tour_detail_view(request, pk):
 
 def tour_edit_view(request, pk):
     """Страница редактирования тура"""
+    cache.delete_pattern('tour_list_*')  # Удаляем кэш списка туров
     tour = get_object_or_404(Tour, pk=pk)
     
     if request.method == "POST":
@@ -209,6 +224,7 @@ def tour_edit_view(request, pk):
 
 def tour_delete_view(request, pk):
     """Мягкое удаление тура (устанавливаем removed=True)"""
+    cache.delete_pattern('tour_list_*')
     tour = get_object_or_404(Tour, pk=pk)
     
     tour.removed = True
@@ -219,6 +235,7 @@ def tour_delete_view(request, pk):
 
 def tour_restore_view(request, pk):
     """Восстановление удаленного тура (устанавливаем removed=False)"""
+    cache.delete_pattern('tour_list_*')
     tour = get_object_or_404(Tour, pk=pk, removed=True)
     
     tour.removed = False

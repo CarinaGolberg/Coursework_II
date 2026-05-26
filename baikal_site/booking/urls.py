@@ -22,7 +22,7 @@ urlpatterns = [
     # Страница редактирования тура
     path('tour/<int:pk>/edit/', views.tour_edit_view, name='tour_edit'),
     
-    # Удаление тура (мягкое)
+    # Удаление тура 
     path('tour/<int:pk>/delete/', views.tour_delete_view, name='tour_delete'),
     
     # Восстановление тура

@@ -257,7 +257,6 @@ class Booking(models.Model):
             self.schedule.tour.max_people - booked
         )
 
-        # ГЛАВНАЯ ПРОВЕРКА
         if self.people > available:
             raise ValidationError(
                 f"Недостаточно мест. "

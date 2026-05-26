@@ -43,7 +43,7 @@ body {
     overflow-x: hidden;
 }
 
-/* ============ TYPOGRAPHY ============ */
+/* Typography */
 h1, h2, h3, .hero-title, .logo {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 600;
@@ -72,7 +72,7 @@ h2:after {
     background: var(--ice-cyan);
 }
 
-/* ============ NAVIGATION ============ */
+/* Navigation */
 .glass-nav {
     position: fixed;
 
@@ -163,7 +163,7 @@ h2:after {
     color: #ff4444;
 }
 
-/* ============ HERO SECTION ============ */
+/* Hero section */
 .hero {
     height: 100vh;
     min-height: 700px;
@@ -253,7 +253,7 @@ h2:after {
     animation: bounce 2s infinite;
 }
 
-/* ============ TOURS GRID ============ */
+/* Tours grid */
 .tours-section {
     width: 100%;
     max-width: 100%;
@@ -391,7 +391,7 @@ h2:after {
     color: var(--baikal-deep);
 }
 
-/* ============ PAGINATION ============ */
+/* Pagination */
 .pagination {
     display: flex;
     justify-content: center;
@@ -426,7 +426,7 @@ h2:after {
     font-weight: 600;
 }
 
-/* ============ FILTERS ============ */
+/* Filters */
 .filters-section {
     background: var(--graphite-light);
     padding: 30px;
@@ -473,7 +473,6 @@ h2:after {
     border-color: var(--ice-cyan);
 }
 
-/* Контейнер для кнопок - теперь выравнивается по нижнему краю как и поля ввода */
 .filter-actions {
     display: flex;
     gap: 12px;
@@ -481,7 +480,6 @@ h2:after {
     margin-bottom: 0;
 }
 
-/* Общие стили для кнопок - теперь они идеально на одной линии */
 .btn-filter,
 .btn-reset {
     display: inline-flex;
@@ -502,12 +500,11 @@ h2:after {
 
     box-sizing: border-box;
 
-    height: 44px;  /* Фиксированная высота, равна высоте полей ввода (padding 12 * 2 + текст) */
+    height: 44px;
     width: auto;
 
     white-space: nowrap;
     
-    /* Убираем все браузерные артефакты */
     margin: 0;
     vertical-align: middle;
 }
@@ -533,7 +530,6 @@ h2:after {
     color: var(--ice-cyan);
 }
 
-/* ============ КНОПКА "НАВЕРХ" ============ */
 .scroll-top-btn {
     position: fixed;
     right: 24px;
@@ -590,7 +586,7 @@ h2:after {
         0 10px 30px rgba(0,229,255,.18);
 }
 
-/* ============ ANIMATIONS ============ */
+/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -626,7 +622,7 @@ h2:after {
     transform: translateY(0);
 }
 
-/* ============ RESPONSIVE ============ */
+/* Responsive */
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2.5rem;

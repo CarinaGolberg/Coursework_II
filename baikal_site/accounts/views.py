@@ -72,7 +72,7 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)
+                login(request, user) # Создание сессии
                 
                 UserActivityLog.objects.create(
                     user=user,
@@ -171,7 +171,7 @@ def add_favorite_view(request, tour_id):
     # Проверяем: уже в избранном?
     is_favorite = request.user.favorite_tours.filter(id=tour.id).exists()
 
-    # Если уже есть → удаляем
+    # Если уже есть - удаляем
     if is_favorite:
 
         request.user.favorite_tours.remove(tour)
@@ -191,7 +191,7 @@ def add_favorite_view(request, tour_id):
                 'is_favorite': False
             })
 
-    # Если нет → добавляем
+    # Если нет - добавляем
     else:
 
         request.user.favorite_tours.add(tour)
@@ -211,7 +211,6 @@ def add_favorite_view(request, tour_id):
                 'is_favorite': True
             })
 
-    # fallback без AJAX
     return redirect(request.META.get('HTTP_REFERER', 'booking:tour_list'))
 
 

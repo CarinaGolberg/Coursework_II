@@ -123,13 +123,11 @@ class BookingForm(forms.ModelForm):
         schedule = cleaned_data.get("schedule")
         people = cleaned_data.get("people")
 
-        # Если какие-то данные отсутствуют —
-        # прекращаем дальнейшую проверку
+        # Если какие-то данные отсутствуют — прекращаем дальнейшую проверку
         if not tour or not schedule or not people:
             return cleaned_data
 
-        # Проверяем, что расписание
-        # принадлежит выбранному туру
+        # Проверяем, что расписание принадлежит выбранному туру
         if schedule.tour_id != tour.id:
             raise forms.ValidationError(
                 "Выбранная дата не принадлежит выбранному туру"
@@ -147,8 +145,7 @@ class BookingForm(forms.ModelForm):
                 "Нельзя забронировать прошедший тур"
             )
 
-        # Считаем актуальное количество
-        # занятых мест напрямую из БД
+        # Считаем актуальное количество занятых мест напрямую из БД
         booked = (
             Booking.objects.filter(
                 schedule=schedule,
